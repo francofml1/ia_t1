@@ -98,6 +98,17 @@ def celulas_vizinhas_livres(celula_atual, labirinto):
 
     return vizinhos_livres
 
+def print_result(caminho, custo_total, expandidos):
+    if len(caminho) == 0:
+            print("Goal é inalcançavel neste labirinto.")
+
+    print(
+        f"BFS:"
+        f"\tCusto total do caminho: {custo_total}.\n"
+        f"\tNumero de passos: {len(caminho)-1}.\n"
+        f"\tNumero total de nos expandidos: {len(expandidos)}.\n\n"
+
+    )
 
 def breadth_first_search(labirinto, inicio, goal, viewer):
     # nos gerados e que podem ser expandidos (vermelhos)
@@ -162,7 +173,7 @@ def a_star_search(labirinto, inicio, goal, viewer):
 
 
 def main():
-    while True:
+    for _ in range(10):
         #SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
         #random.seed(SEED)
         N_LINHAS  = 10
@@ -187,16 +198,7 @@ def main():
         caminho, custo_total, expandidos = \
                 breadth_first_search(labirinto, INICIO, GOAL, viewer)
 
-        if len(caminho) == 0:
-            print("Goal é inalcançavel neste labirinto.")
-
-        print(
-            f"BFS:"
-            f"\tCusto total do caminho: {custo_total}.\n"
-            f"\tNumero de passos: {len(caminho)-1}.\n"
-            f"\tNumero total de nos expandidos: {len(expandidos)}.\n\n"
-
-        )
+        print_result()
 
         viewer.update(path=caminho)
         viewer.pause()
