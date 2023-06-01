@@ -179,7 +179,7 @@ def depth_first_search(labirinto, inicio, goal, viewer):
     # entao ele nao eh alcancavel.
     while (len(fronteira) > 0) and (goal_encontrado is None):
         # seleciona o no mais antigo para ser expandido
-        no_atual = fronteira.popleft()
+        no_atual = fronteira.pop()
 
         # busca os vizinhos do no
         vizinhos = celulas_vizinhas_livres(no_atual, labirinto)
