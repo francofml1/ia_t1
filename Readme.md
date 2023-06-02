@@ -1,4 +1,17 @@
+# Get start:
 
+```bash
+
+# Cria venv
+python -m venv "venv"
+.\venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Salvar dependências:
+```bash
+pip freeze > requirements.txt
+```
 
 
 ## Exemplos:
