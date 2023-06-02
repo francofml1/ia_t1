@@ -292,7 +292,7 @@ def uniform_cost_search(labirinto, inicio, goal, viewer):
             #         v.custo = novo_custo
 
         viewer.update(generated=fronteira, expanded=expandidos)
-        viewer.pause()
+        # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
     custo = custo_caminho(caminho)
