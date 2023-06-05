@@ -293,31 +293,62 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
     pass
 
 
+def cal_media(res_list):
+    ret = Results(name=f"{res_list[0].name}_media")
+    counter = 0
+    tempo = 0
+    numExpandidos = 0
+    numGerados = 0
+    custo_total = 0
+    tamCaminho = 0
+    for res in res_list:
+        if res.alcancado:
+            counter += 1
+            tempo += res.tempo
+            numExpandidos += res.numExpandidos
+            numGerados += res.numGerados
+            custo_total += res.custo_total
+            tamCaminho += res.tamCaminho
+
+    ret.tempo = tempo
+    ret.numExpandidos = numExpandidos
+    ret.numGerados = numGerados
+    ret.custo_total = custo_total
+    ret.tamCaminho = tamCaminho
+
+    return ret
+
+
 # -------------------------------
 
 
 def main():
     print("Starting")
-    for _ in range(1):
+    REPETICOES = 10
+    res_BFS = []
+    res_DFS = []
+    res_UCS = []
+
+    SHOW_GRAPH = False
+    # SHOW_GRAPH = False
+    ZOOM = 30
+
+    # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
+    # random.seed(SEED)
+    N_LINHAS = 100
+    N_COLUNAS = 100
+    INICIO = Celula(y=0, x=0, anterior=None)
+    GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
+
+    """
+    O labirinto sera representado por uma matriz (lista de listas)
+    em que uma posicao tem 0 se ela eh livre e 1 se ela esta ocupada.
+    """
+    print(f"Tamanho do labirinto: {N_LINHAS}x{N_COLUNAS}")
+
+    for _ in range(REPETICOES):
         print("-------------------------")
 
-        SHOW_GRAPH = True
-        # SHOW_GRAPH = False
-        ZOOM = 30
-
-        # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
-        # random.seed(SEED)
-        N_LINHAS = 10
-        N_COLUNAS = 20
-        INICIO = Celula(y=0, x=0, anterior=None)
-        GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
-
-        """
-        O labirinto sera representado por uma matriz (lista de listas)
-        em que uma posicao tem 0 se ela eh livre e 1 se ela esta ocupada.
-        """
-        print(f"Tamanho do labirinto: {N_LINHAS}x{N_COLUNAS}")
-        
         labirinto = gera_labirinto(N_LINHAS, N_COLUNAS, INICIO, GOAL)
 
         viewer_BFS = None
@@ -349,24 +380,41 @@ def main():
         # ----------------------------------------
         result_BFS.run()
         result_BFS.printResults()
+        res_BFS.append(result_BFS)
 
         # ----------------------------------------
         # DFS Search
         # ----------------------------------------
         result_DFS.run()
         result_DFS.printResults()
+        res_DFS.append(result_DFS)
 
         # ----------------------------------------
         # Uniform Cost Search
         # ----------------------------------------
         result_UCS.run()
         result_UCS.printResults()
+        res_UCS.append(result_UCS)
 
         print("+++++++++++++++++++++++++")
 
         if SHOW_GRAPH:
             print("OK! Pressione Enter pra finalizar...")
             input()
+
+    print("=========================")
+
+    res_media_BFS = cal_media(res_BFS)
+    res_media_BFS.alcancado = True
+    res_media_DFS = cal_media(res_DFS)
+    res_media_DFS.alcancado = True
+    res_media_UCS = cal_media(res_UCS)
+    res_media_UCS.alcancado = True
+
+    print("Resultado Final:")
+    res_media_BFS.printResults()
+    res_media_DFS.printResults()
+    res_media_UCS.printResults()
 
 
 if __name__ == "__main__":
