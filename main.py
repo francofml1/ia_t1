@@ -47,6 +47,13 @@ def esta_contido(lista, celula):
     return False
 
 
+def get_index(lista, celula):
+    for elemento in lista:
+        if (elemento.y == celula.y) and (elemento.x == celula.x):
+            return lista.index(elemento)
+    return -1
+
+
 def custo_caminho(caminho):
     if len(caminho) == 0:
         return inf
@@ -211,44 +218,8 @@ def depth_first_search(labirinto, inicio, goal, viewer=None):
 
     return caminho, custo, expandidos
 
-def uniform_cost_search_GPT(labirinto, inicio, goal, viewer):
-    fronteira = []
-    expandidos = set()
-    goal_encontrado = None
 
-    fronteira.append((inicio, 0))
-
-    while (len(fronteira) > 0) and (goal_encontrado is None):
-        fronteira.sort(key=lambda x: x[1])  # Ordena a fronteira pelo custo acumulado
-        no_atual, custo_atual = fronteira.pop(0)
-
-        if no_atual.y == goal.y and no_atual.x == goal.x:
-            goal_encontrado = no_atual
-            break
-
-        vizinhos = celulas_vizinhas_livres(no_atual, labirinto)
-
-        for v in vizinhos:
-            novo_custo = custo_atual + distancia(v.anterior, v)
-            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
-                fronteira.append((v, novo_custo))
-            elif esta_contido(fronteira, v):
-                # Atualiza o custo se o novo caminho tiver um custo menor
-                index = fronteira.index((v, custo_caminho(obtem_caminho(v))))
-                if novo_custo < fronteira[index][1]:
-                    fronteira[index] = (v, novo_custo)
-
-        expandidos.add(no_atual)
-
-        viewer.update(generated=fronteira, expanded=expandidos)
-
-    caminho = obtem_caminho(goal_encontrado)
-    custo = custo_caminho(caminho)
-
-    return caminho, custo, expandidos
-
-
-def uniform_cost_search(labirinto, inicio, goal, viewer):
+def uniform_cost_search(labirinto, inicio, goal, viewer=None):
     # nos gerados e que podem ser expandidos (vermelhos)
     fronteira = []
     # nos ja expandidos (amarelos)
@@ -261,14 +232,14 @@ def uniform_cost_search(labirinto, inicio, goal, viewer):
     goal_encontrado = None
 
     # Repete enquanto nos nao encontramos o goal e ainda
-    # existem para serem expandidos na fronteira. Se
+    # existem nos para serem expandidos na fronteira. Se
     # acabarem os nos da fronteira antes do goal ser encontrado,
     # entao ele nao eh alcancavel.
     while (len(fronteira) > 0) and (goal_encontrado is None):
         # ordena a fronteira pelo custo do caminho
         fronteira.sort(key=lambda x: x.custo, reverse=True)
 
-        # seleciona o no mais novo para ser expandido
+        # seleciona o no de menor custo para ser expandido
         no_atual = fronteira.pop()
 
         # testa objetivo:
@@ -277,22 +248,26 @@ def uniform_cost_search(labirinto, inicio, goal, viewer):
             goal_encontrado = no_atual
             break
 
-        # adiciona no para explorado
+        # adiciona no para explorados
         expandidos.add(no_atual)
 
         # busca os vizinhos do no
         vizinhos = celulas_vizinhas_livres(no_atual, labirinto)
 
         for v in vizinhos:
-            # calcula novo custo
-            novo_custo = v.custo + custo_caminho(obtem_caminho(v))
+            # calcula o custo
+            v.custo = custo_caminho(obtem_caminho(v))
+
             if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
-                v.custo = novo_custo
                 fronteira.append(v)
-            # elif esta_contido(fronteira, v):
-            #     # atualiza o custo se o novo caminho tiver um custo menor
-            #     if novo_custo < custo_caminho(obtem_caminho(v)):
-            #         v.custo = novo_custo
+            elif esta_contido(fronteira, v):
+                # encontra no na fronteira
+                index = get_index(fronteira, v)
+
+                if index > -1:
+                    # atualiza o custo se o novo caminho tiver um custo menor
+                    if v.custo < fronteira[index].custo:
+                        fronteira[index] = v
 
         if viewer is not None:
             viewer.update(generated=fronteira, expanded=expandidos)
