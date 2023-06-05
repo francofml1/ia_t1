@@ -61,9 +61,9 @@ class Results:
         else:
             print(
                 f"Método: {self.name}\n"
-                f"Tempo de execução: {round( self.tempo,4)} segundos\n"
-                f"Número de nós expandidos: {self.numExpandidos}\n"
-                f"Número de nós gerados: {self.numGerados}\n"
-                f"Custo do caminho: {round(self.custo_total, 4)}\n"
-                f"Tamanho do caminho: {self.tamCaminho}\n"
+                f"\tTempo de execução: {round( self.tempo,4)} segundos\n"
+                f"\tNúmero de nós expandidos: {self.numExpandidos}\n"
+                f"\tNúmero de nós gerados: {self.numGerados}\n"
+                f"\tCusto do caminho: {round(self.custo_total, 4)}\n"
+                f"\tTamanho do caminho: {self.tamCaminho}\n"
             )

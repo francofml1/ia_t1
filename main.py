@@ -297,7 +297,7 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
 
 
 def main():
-    print("start loop")
+    print("Starting")
     for _ in range(1):
         print("-------------------------")
 
@@ -316,6 +316,8 @@ def main():
         O labirinto sera representado por uma matriz (lista de listas)
         em que uma posicao tem 0 se ela eh livre e 1 se ela esta ocupada.
         """
+        print(f"Tamanho do labirinto: {N_LINHAS}x{N_COLUNAS}")
+        
         labirinto = gera_labirinto(N_LINHAS, N_COLUNAS, INICIO, GOAL)
 
         viewer_BFS = None
