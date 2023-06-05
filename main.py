@@ -168,6 +168,9 @@ def breadth_first_search(labirinto, inicio, goal, viewer=None):
     caminho = obtem_caminho(goal_encontrado)
     custo = custo_caminho(caminho)
 
+    if viewer is not None:
+        viewer.update(path=caminho)
+
     return caminho, custo, expandidos
 
 
@@ -215,6 +218,9 @@ def depth_first_search(labirinto, inicio, goal, viewer=None):
 
     caminho = obtem_caminho(goal_encontrado)
     custo = custo_caminho(caminho)
+
+    if viewer is not None:
+        viewer.update(path=caminho)
 
     return caminho, custo, expandidos
 
@@ -276,6 +282,9 @@ def uniform_cost_search(labirinto, inicio, goal, viewer=None):
     caminho = obtem_caminho(goal_encontrado)
     custo = custo_caminho(caminho)
 
+    if viewer is not None:
+        viewer.update(path=caminho)
+
     return caminho, custo, expandidos
 
 
@@ -292,9 +301,9 @@ def main():
     for _ in range(1):
         print("-------------------------")
 
-        # SHOW_GRAPH = True
-        SHOW_GRAPH = False
-        ZOOM = 40
+        SHOW_GRAPH = True
+        # SHOW_GRAPH = False
+        ZOOM = 30
 
         # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
         # random.seed(SEED)
@@ -309,65 +318,47 @@ def main():
         """
         labirinto = gera_labirinto(N_LINHAS, N_COLUNAS, INICIO, GOAL)
 
-        # ----------------------------------------
-        # BFS Search
-        # ----------------------------------------
+        viewer_BFS = None
+        viewer_DFS = None
+        viewer_UCS = None
         if SHOW_GRAPH:
             viewer_BFS = MazeViewer(
                 labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="BFS"
             )
-            caminho, custo_total, expandidos = breadth_first_search(
-                labirinto, INICIO, GOAL, viewer_BFS
+            viewer_DFS = MazeViewer(
+                labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="DFS"
+            )
+            viewer_UCS = MazeViewer(
+                labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="UCS"
             )
 
-            viewer_BFS.update(path=caminho)
-            viewer_BFS.pause()
-            print_result("BFS", caminho, custo_total, expandidos)
-        else:
-            result_BFS = Results("BFS")
+        result_BFS = Results(
+            "BFS", breadth_first_search, labirinto, INICIO, GOAL, viewer_BFS
+        )
+        result_DFS = Results(
+            "DFS", depth_first_search, labirinto, INICIO, GOAL, viewer_DFS
+        )
+        result_UCS = Results(
+            "UCS", uniform_cost_search, labirinto, INICIO, GOAL, viewer_UCS
+        )
 
-            result_BFS.setResults(breadth_first_search, labirinto, INICIO, GOAL)
-            result_BFS.printResults()
-
+        # ----------------------------------------
+        # BFS Search
+        # ----------------------------------------
+        result_BFS.run()
+        result_BFS.printResults()
 
         # ----------------------------------------
         # DFS Search
         # ----------------------------------------
-        viewer._figname = "DFS"
-        caminho, custo_total, expandidos = depth_first_search(
-            labirinto, INICIO, GOAL, viewer
-        )
-
-        print_result("DFS", caminho, custo_total, expandidos)
-
-        viewer.update(path=caminho)
-        viewer.pause()
+        result_DFS.run()
+        result_DFS.printResults()
 
         # ----------------------------------------
-        # A-Star Search
+        # Uniform Cost Search
         # ----------------------------------------
-        # viewer._figname = "A-Star"
-        # caminho, custo_total, expandidos = a_star_search(
-        #     labirinto, INICIO, GOAL, viewer
-        # )
-
-        # print_result("A-Star", caminho, custo_total, expandidos)
-
-        # viewer.update(path=caminho)
-        # viewer.pause()
-
-        # ----------------------------------------
-        # Uniform Cost Search (Obs: opcional)
-        # ----------------------------------------
-        viewer._figname = "UCS"
-        caminho, custo_total, expandidos = uniform_cost_search(
-            labirinto, INICIO, GOAL, viewer
-        )
-
-        print_result("UCS", caminho, custo_total, expandidos)
-
-        viewer.update(path=caminho)
-        viewer.pause()
+        result_UCS.run()
+        result_UCS.printResults()
 
         print("+++++++++++++++++++++++++")
 
