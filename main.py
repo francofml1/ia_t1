@@ -33,6 +33,17 @@ class Celula:
         self.anterior = anterior
         self.custo = 0
 
+    def __eq__(self, other):
+        if not isinstance(other, Celula):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.x == other.x and self.y == other.y
+    
+    def __hash__(self):
+        # necessary for instances to behave sanely in dicts and sets.
+        return hash((self.x, self.y))
+
 
 def distancia(celula_1, celula_2):
     dx = celula_1.x - celula_2.x
@@ -41,16 +52,14 @@ def distancia(celula_1, celula_2):
 
 
 def esta_contido(lista, celula):
-    for elemento in lista:
-        if (elemento.y == celula.y) and (elemento.x == celula.x):
-            return True
-    return False
+    return True if (celula in lista) else False
 
 
 def get_index(lista, celula):
-    for elemento in lista:
-        if (elemento.y == celula.y) and (elemento.x == celula.x):
-            return lista.index(elemento)
+    if esta_contido(lista, celula):
+        for elemento in lista:
+            if (elemento.y == celula.y) and (elemento.x == celula.x):
+                return lista.index(elemento)
     return -1
 
 
