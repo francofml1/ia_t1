@@ -366,8 +366,6 @@ def main():
         """
         labirinto = gera_labirinto(N_LINHAS, N_COLUNAS, INICIO, GOAL)
 
-        viewer = MazeViewer(labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=40)
-
         # ----------------------------------------
         # BFS Search
         # ----------------------------------------

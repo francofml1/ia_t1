@@ -9,12 +9,13 @@ class MazeViewer():
     GENERATED_COLOR = (0, 0, 255)
     PATH_COLOR = (128, 0, 255)
 
-    def __init__(self, labirinto, start, goal, zoom=50, step_time_miliseconds=-1):
+    def __init__(self, labirinto, start, goal, zoom=50, step_time_miliseconds=-1, name="view"):
         self._labirinto = labirinto
         self._zoom = zoom
         self._step = step_time_miliseconds
         self._start = start
         self._goal = goal
+        self.name = name
 
     def update(self, generated=[], expanded=[], path=[]):
         # To understand the image representation in opencv, refer to the following links:
@@ -38,7 +39,7 @@ class MazeViewer():
         maze_img = self._increase_image_size(maze_img, zoom=self._zoom)
         self._draw_grid(maze_img, self._zoom)
 
-        cv2.imshow("view", maze_img)
+        cv2.imshow(self.name, maze_img)
         cv2.waitKey(self._step)
 
     def pause(self) -> None:
