@@ -309,46 +309,6 @@ def a_star_search(labirinto, inicio, goal, viewer):
 
 
 def main():
-    # Tabela com os resultados:
-    results = {
-        "BFS": [
-            {
-                "tempo": 0,
-                "nosExpand": 0,
-                "nosGerados": 0,
-                "custoCaminho": 0,
-                "tamCaminho": 0,
-            }
-        ],
-        "DFS": [
-            {
-                "tempo": 0,
-                "nosExpand": 0,
-                "nosGerados": 0,
-                "custoCaminho": 0,
-                "tamCaminho": 0,
-            }
-        ],
-        "UCS": [
-            {
-                "tempo": 0,
-                "nosExpand": 0,
-                "nosGerados": 0,
-                "custoCaminho": 0,
-                "tamCaminho": 0,
-            }
-        ],
-        "A_star": [
-            {
-                "tempo": 0,
-                "nosExpand": 0,
-                "nosGerados": 0,
-                "custoCaminho": 0,
-                "tamCaminho": 0,
-            }
-        ],
-    }
-
     print("start loop")
     for _ in range(10):
         print("-------------------------")
