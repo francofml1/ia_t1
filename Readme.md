@@ -14,6 +14,11 @@ pip freeze > requirements.txt
 ```
 
 
+## Pseudo-códigos:
+- **BFS:** Figura 3.11
+- **UCS:** Figura 3.14
+- **DFS:** Figura 3.17
+
 ## Exemplos:
 - [Pathfinding-Algorithms](https://github.com/kbrizov/Pathfinding-Algorithms)
 - [Uniform Cost Search (UCS) Algorithm in Python](https://plainenglish.io/blog/uniform-cost-search-ucs-algorithm-in-python-ec3ee03fca9f)
