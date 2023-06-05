@@ -3,6 +3,7 @@ import random
 from collections import deque
 from viewer import MazeViewer
 from math import inf, sqrt
+from results import Results
 
 
 def gera_labirinto(n_linhas, n_colunas, inicio, goal):
@@ -115,7 +116,7 @@ def print_result(nome, caminho, custo_total, expandidos):
     )
 
 
-def breadth_first_search(labirinto, inicio, goal, viewer):
+def breadth_first_search(labirinto, inicio, goal, viewer=None):
     # nos gerados e que podem ser expandidos (vermelhos)
     fronteira = deque()
     # nos ja expandidos (amarelos)
@@ -153,8 +154,9 @@ def breadth_first_search(labirinto, inicio, goal, viewer):
 
         expandidos.add(no_atual)
 
-        viewer.update(generated=fronteira, expanded=expandidos)
-        # viewer.pause()
+        if viewer is not None:
+            viewer.update(generated=fronteira, expanded=expandidos)
+            # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
     custo = custo_caminho(caminho)
@@ -162,7 +164,7 @@ def breadth_first_search(labirinto, inicio, goal, viewer):
     return caminho, custo, expandidos
 
 
-def depth_first_search(labirinto, inicio, goal, viewer):
+def depth_first_search(labirinto, inicio, goal, viewer=None):
     # nos gerados e que podem ser expandidos (vermelhos)
     fronteira = deque()
     # nos ja expandidos (amarelos)
@@ -200,8 +202,9 @@ def depth_first_search(labirinto, inicio, goal, viewer):
 
         expandidos.add(no_atual)
 
-        viewer.update(generated=fronteira, expanded=expandidos)
-        # viewer.pause()
+        if viewer is not None:
+            viewer.update(generated=fronteira, expanded=expandidos)
+            # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
     custo = custo_caminho(caminho)
@@ -291,8 +294,9 @@ def uniform_cost_search(labirinto, inicio, goal, viewer):
             #     if novo_custo < custo_caminho(obtem_caminho(v)):
             #         v.custo = novo_custo
 
-        viewer.update(generated=fronteira, expanded=expandidos)
-        # viewer.pause()
+        if viewer is not None:
+            viewer.update(generated=fronteira, expanded=expandidos)
+            # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
     custo = custo_caminho(caminho)
@@ -300,7 +304,7 @@ def uniform_cost_search(labirinto, inicio, goal, viewer):
     return caminho, custo, expandidos
 
 
-def a_star_search(labirinto, inicio, goal, viewer):
+def a_star_search(labirinto, inicio, goal, viewer=None):
     # remova o comando abaixo e coloque o codigo A-star aqui
     pass
 
@@ -310,8 +314,12 @@ def a_star_search(labirinto, inicio, goal, viewer):
 
 def main():
     print("start loop")
-    for _ in range(10):
+    for _ in range(1):
         print("-------------------------")
+
+        # SHOW_GRAPH = True
+        SHOW_GRAPH = False
+        ZOOM = 40
 
         # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
         # random.seed(SEED)
@@ -329,15 +337,23 @@ def main():
         # ----------------------------------------
         # BFS Search
         # ----------------------------------------
-        viewer._figname = "BFS"
-        caminho, custo_total, expandidos = breadth_first_search(
-            labirinto, INICIO, GOAL, viewer
-        )
+        if SHOW_GRAPH:
+            viewer_BFS = MazeViewer(
+                labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="BFS"
+            )
+            caminho, custo_total, expandidos = breadth_first_search(
+                labirinto, INICIO, GOAL, viewer_BFS
+            )
 
-        print_result("BFS", caminho, custo_total, expandidos)
+            viewer_BFS.update(path=caminho)
+            viewer_BFS.pause()
+            print_result("BFS", caminho, custo_total, expandidos)
+        else:
+            result_BFS = Results("BFS")
 
-        viewer.update(path=caminho)
-        viewer.pause()
+            result_BFS.setResults(breadth_first_search, labirinto, INICIO, GOAL)
+            result_BFS.printResults()
+
 
         # ----------------------------------------
         # DFS Search
@@ -379,10 +395,10 @@ def main():
         viewer.pause()
 
         print("+++++++++++++++++++++++++")
-        print("-------------------------")
 
-    print("OK! Pressione alguma tecla pra finalizar...")
-    input()
+        if SHOW_GRAPH:
+            print("OK! Pressione Enter pra finalizar...")
+            input()
 
 
 if __name__ == "__main__":
