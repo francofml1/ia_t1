@@ -403,8 +403,8 @@ def main():
 
     # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
     # random.seed(SEED)
-    N_LINHAS = 10
-    N_COLUNAS = 20
+    N_LINHAS = 20
+    N_COLUNAS = 30
     INICIO = Celula(y=0, x=0, anterior=None)
     GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
 
