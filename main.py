@@ -33,6 +33,17 @@ class Celula:
         self.anterior = anterior
         self.custo = 0
 
+    def __eq__(self, other):
+        if not isinstance(other, Celula):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        # necessary for instances to behave sanely in dicts and sets.
+        return hash((self.x, self.y))
+
 
 def distancia(celula_1, celula_2):
     dx = celula_1.x - celula_2.x
@@ -41,16 +52,14 @@ def distancia(celula_1, celula_2):
 
 
 def esta_contido(lista, celula):
-    for elemento in lista:
-        if (elemento.y == celula.y) and (elemento.x == celula.x):
-            return True
-    return False
+    return True if (celula in lista) else False
 
 
 def get_index(lista, celula):
-    for elemento in lista:
-        if (elemento.y == celula.y) and (elemento.x == celula.x):
-            return lista.index(elemento)
+    if esta_contido(lista, celula):
+        for elemento in lista:
+            if (elemento.y == celula.y) and (elemento.x == celula.x):
+                return lista.index(elemento)
     return -1
 
 
@@ -289,8 +298,92 @@ def uniform_cost_search(labirinto, inicio, goal, viewer=None):
 
 
 def a_star_search(labirinto, inicio, goal, viewer=None):
-    # remova o comando abaixo e coloque o codigo A-star aqui
-    pass
+    # nos gerados e que podem ser expandidos (vermelhos)
+    fronteira = []
+    # nos ja expandidos (amarelos)
+    expandidos = set()
+
+    # adiciona o no inicial na fronteira
+    fronteira.append(inicio)
+
+    # variavel para armazenar o goal quando ele for encontrado.
+    goal_encontrado = None
+
+    # Repete enquanto nos nao encontramos o goal e ainda
+    # existem nos para serem expandidos na fronteira. Se
+    # acabarem os nos da fronteira antes do goal ser encontrado,
+    # entao ele nao eh alcancavel.
+    while (len(fronteira) > 0) and (goal_encontrado is None):
+        # ordena a fronteira pelo custo do caminho
+        fronteira.sort(key=lambda x: x.custo, reverse=True)
+
+        # seleciona o no de menor custo para ser expandido
+        no_atual = fronteira.pop()
+
+        # testa objetivo:
+        if no_atual.y == goal.y and no_atual.x == goal.x:
+            # encerra loop interno
+            goal_encontrado = no_atual
+            break
+
+        # adiciona no para explorados
+        expandidos.add(no_atual)
+
+        # busca os vizinhos do no
+        vizinhos = celulas_vizinhas_livres(no_atual, labirinto)
+
+        for v in vizinhos:
+            # calcula o custo
+            v.custo = custo_caminho(obtem_caminho(v)) + distancia(v, goal)
+
+            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
+                fronteira.append(v)
+            elif esta_contido(fronteira, v):
+                # encontra no na fronteira
+                index = get_index(fronteira, v)
+
+                if index > -1:
+                    # atualiza o custo se o novo caminho tiver um custo menor
+                    if v.custo < fronteira[index].custo:
+                        fronteira[index] = v
+
+        if viewer is not None:
+            viewer.update(generated=fronteira, expanded=expandidos)
+            # viewer.pause()
+
+    caminho = obtem_caminho(goal_encontrado)
+    custo = custo_caminho(caminho)
+
+    if viewer is not None:
+        viewer.update(path=caminho)
+
+    return caminho, custo, expandidos
+
+
+def cal_media(res_list):
+    ret = Results(name=f"{res_list[0].name}_media")
+    counter = 0
+    tempo = 0
+    numExpandidos = 0
+    numGerados = 0
+    custo_total = 0
+    tamCaminho = 0
+    for res in res_list:
+        if res.alcancado:
+            counter += 1
+            tempo += res.tempo
+            numExpandidos += res.numExpandidos
+            numGerados += res.numGerados
+            custo_total += res.custo_total
+            tamCaminho += res.tamCaminho
+
+    ret.tempo = tempo
+    ret.numExpandidos = numExpandidos
+    ret.numGerados = numGerados
+    ret.custo_total = custo_total
+    ret.tamCaminho = tamCaminho
+
+    return ret
 
 
 # -------------------------------
@@ -298,31 +391,38 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
 
 def main():
     print("Starting")
-    for _ in range(1):
+    REPETICOES = 1
+    res_BFS = []
+    res_DFS = []
+    res_UCS = []
+    res_AStar = []
+
+    SHOW_GRAPH = True
+    # SHOW_GRAPH = False
+    ZOOM = 30
+
+    # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
+    # random.seed(SEED)
+    N_LINHAS = 10
+    N_COLUNAS = 20
+    INICIO = Celula(y=0, x=0, anterior=None)
+    GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
+
+    """
+    O labirinto sera representado por uma matriz (lista de listas)
+    em que uma posicao tem 0 se ela eh livre e 1 se ela esta ocupada.
+    """
+    print(f"Tamanho do labirinto: {N_LINHAS}x{N_COLUNAS}")
+
+    for _ in range(REPETICOES):
         print("-------------------------")
 
-        SHOW_GRAPH = True
-        # SHOW_GRAPH = False
-        ZOOM = 30
-
-        # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
-        # random.seed(SEED)
-        N_LINHAS = 10
-        N_COLUNAS = 20
-        INICIO = Celula(y=0, x=0, anterior=None)
-        GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
-
-        """
-        O labirinto sera representado por uma matriz (lista de listas)
-        em que uma posicao tem 0 se ela eh livre e 1 se ela esta ocupada.
-        """
-        print(f"Tamanho do labirinto: {N_LINHAS}x{N_COLUNAS}")
-        
         labirinto = gera_labirinto(N_LINHAS, N_COLUNAS, INICIO, GOAL)
 
         viewer_BFS = None
         viewer_DFS = None
         viewer_UCS = None
+        viewer_AStar = None
         if SHOW_GRAPH:
             viewer_BFS = MazeViewer(
                 labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="BFS"
@@ -332,6 +432,9 @@ def main():
             )
             viewer_UCS = MazeViewer(
                 labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="UCS"
+            )
+            viewer_AStar = MazeViewer(
+                labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="A-Star"
             )
 
         result_BFS = Results(
@@ -343,31 +446,62 @@ def main():
         result_UCS = Results(
             "UCS", uniform_cost_search, labirinto, INICIO, GOAL, viewer_UCS
         )
+        result_AStar = Results(
+            "A-Star", a_star_search, labirinto, INICIO, GOAL, viewer_AStar
+        )
 
         # ----------------------------------------
         # BFS Search
         # ----------------------------------------
         result_BFS.run()
-        result_BFS.printResults()
+        # result_BFS.printResults()
+        res_BFS.append(result_BFS)
 
         # ----------------------------------------
         # DFS Search
         # ----------------------------------------
         result_DFS.run()
-        result_DFS.printResults()
+        # result_DFS.printResults()
+        res_DFS.append(result_DFS)
 
         # ----------------------------------------
         # Uniform Cost Search
         # ----------------------------------------
         result_UCS.run()
-        result_UCS.printResults()
+        # result_UCS.printResults()
+        res_UCS.append(result_UCS)
+        
+        # ----------------------------------------
+        # A-Star Search
+        # ----------------------------------------
+        result_AStar.run()
+        # result_AStar.printResults()
+        res_AStar.append(result_AStar)
 
         print("+++++++++++++++++++++++++")
 
-        if SHOW_GRAPH:
-            print("OK! Pressione Enter pra finalizar...")
-            input()
 
+    print("=========================")
+
+    res_media_BFS = cal_media(res_BFS)
+    res_media_BFS.alcancado = True
+    res_media_DFS = cal_media(res_DFS)
+    res_media_DFS.alcancado = True
+    res_media_UCS = cal_media(res_UCS)
+    res_media_UCS.alcancado = True
+    res_media_AStar = cal_media(res_AStar)
+    res_media_AStar.alcancado = True
+
+    print("Resultado Final:")
+    res_media_BFS.printResults()
+    res_media_DFS.printResults()
+    res_media_UCS.printResults()
+    res_media_AStar.printResults()
+    
+
+    if SHOW_GRAPH:
+        print("OK! Pressione Enter pra finalizar...")
+        input()
 
 if __name__ == "__main__":
     main()
