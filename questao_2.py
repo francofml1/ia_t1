@@ -53,7 +53,7 @@ def obtem_caminho(G, s, t):
 def plot_grafo(G, u, my_pos, fig):
     if isinstance(u, tuple):
         u = u[0]
-        
+
     print(
         f"no atual: {u}, "
         f"dis: {G.nodes[u]['dis']}, "
@@ -79,6 +79,9 @@ def plot_grafo(G, u, my_pos, fig):
     # plt.show()
 
 
+"""## Algoritmo BFS (Busca em Largura)"""
+
+
 # Implementação do algoritmo BFS
 def BFS(G_inicial, source):
     # Faz uma copia do grafo
@@ -92,6 +95,9 @@ def BFS(G_inicial, source):
         G.nodes[v]["dis"] = np.inf
         G.nodes[v]["custo"] = 0
         
+        
+
+
 
     # Inicia o nó origem com cor cinza e distância zero
     G.nodes[source]["cor"] = "grey"
@@ -124,24 +130,6 @@ def BFS(G_inicial, source):
 
         if SHOW_GRAPH:
             plot_grafo(G, u, my_pos, fig)
-            # print(f"no atual: {u}, dis: {G.nodes[u]['dis']}, cor: {G.nodes[u]['cor']}")
-
-            # color_map = []
-            # for x in G.nodes():
-            #     color_map.append(G.nodes[x]["cor"])
-            # nx.draw(
-            #     G,
-            #     pos=my_pos,
-            #     node_color=color_map,
-            #     with_labels=True,
-            #     edge_color="white",
-            #     font_color="red",
-            #     node_size=500,
-            # )
-            # labels = nx.get_edge_attributes(G, "weight")
-            # nx.draw_networkx_edge_labels(G, my_pos, edge_labels=labels, font_size=10)
-            # fig.set_facecolor("#4b70ab")
-            # plt.waitforbuttonpress()
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
@@ -154,12 +142,11 @@ def BFS(G_inicial, source):
 """## Algoritmo UCS (Custo Uniforme)"""
 
 
+# Implementação do algoritmo UCS
 # f(n) = g(n)
 def UCS(G_inicial, source, goal):
     # Faz uma copia do grafo
     G = G_inicial.copy()
-
-    color_map = []
 
     # Inicia todos os nós com cor branca, distância infinita e custo zero
     for v in G.nodes() - {source}:
@@ -198,7 +185,7 @@ def UCS(G_inicial, source, goal):
                 plot_grafo(G, u, my_pos, fig)
             break
 
-        custo_u = calcula_custo_caminho(G, obtem_caminho(G, source, u[0]))
+        custo_u = calcula_custo_g(G, obtem_caminho(G, source, u[0]))
 
         # Define os vizinhos para cinza
         for v in G.neighbors(u[0]):
@@ -231,8 +218,83 @@ def UCS(G_inicial, source, goal):
 
 """## Algoritmo A-star"""
 
-# Implemente aqui o algoritmo A-star
+
+# Implementação do algoritmo A-star
 # f(n) = g(n) + h(n)
+def AStar(G_inicial, source, goal, Estimation):
+    # Faz uma copia do grafo
+    G = G_inicial.copy()
+
+    # Inicia todos os nós com cor branca, distância infinita e custo zero
+    for v in G.nodes() - {source}:
+        G.nodes[v]["cor"] = "white"
+        G.nodes[v]["dis"] = np.inf
+        G.nodes[v]["custo"] = 0
+
+    # Inicia o nó origem com cor cinza, distância infinita e custo zero
+    G.nodes[source]["cor"] = "grey"
+    G.nodes[source]["dis"] = 0
+    G.nodes[source]["custo"] = 0
+
+    # Implementação de Fila FIFO (append (right), popleft)
+    Q = []
+    Q.append((source, G.nodes[source]["custo"]))
+
+    # configuração para printar o grafo no mesmo formato sempre
+    my_pos = nx.spring_layout(G, seed=3113794652)
+    fig = plt.figure(figsize=(8, 8))
+
+    while len(Q) != 0:
+        # ordena a fronteira pelo custo do caminho
+        Q.sort(key=lambda x: x[1], reverse=True)
+
+        # seleciona o no de menor custo para ser expandido
+        u = Q.pop()
+
+        # testa objetivo
+        if u[0] == goal:
+            G.nodes[goal]["cor"] = "black"
+            G.nodes[goal]["dis"] = G.nodes[u[0]]["dis"] + 1
+            caminho = obtem_caminho(G, source, goal)
+            G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
+
+            if SHOW_GRAPH:
+                plot_grafo(G, u, my_pos, fig)
+            break
+
+        custo_u = calcula_custo_g(G, obtem_caminho(G, source, u[0]))
+
+        # Define os vizinhos para cinza
+        for v in G.neighbors(u[0]):
+            if G.nodes[v]["cor"] == "white":
+                G.nodes[v]["cor"] = "grey"
+
+                G.nodes[v]["dis"] = G.nodes[u[0]]["dis"] + 1
+                G.nodes[v]["pre"] = u[0]
+                caminho = obtem_caminho(G, source, v)
+                G.nodes[v]["custo"] = calcula_custo_g(G, caminho) + estima_custo_h(
+                    v, Estimation
+                )
+
+                Q.append((v, G.nodes[v]["custo"]))
+            elif G.nodes[v]["cor"] == "grey":
+                # caminho = obtem_caminho(G, source, v)
+                novo_custo = (
+                    custo_u + G[u[0]][v]["weight"] + estima_custo_h(v, Estimation)
+                )
+                if G.nodes[v]["custo"] > novo_custo:
+                    G.nodes[v]["custo"] = novo_custo
+                    G.nodes[v]["pre"] = u[0]
+
+        # marca o nó vizitado para cor preta
+        G.nodes[u[0]]["cor"] = "black"
+
+        if SHOW_GRAPH:
+            plot_grafo(G, u, my_pos, fig)
+
+    # Grafo G retornado contem as informações de distância
+    # e cores desde o nó origem a todos os demais nós
+    return G
 
 
 def main():
@@ -319,30 +381,39 @@ def main():
     # BFS
     # ----------------------------------------
     """
-    G = BFS(G_inicial, origem)
-    caminho = obtem_caminho(G, origem, destino)
+    G_BFS = BFS(G_inicial, origem)
+    caminho_BFS = obtem_caminho(G_BFS, origem, destino)
 
-    custo = calcula_custo_caminho(G, caminho)
+    custo_BFS = calcula_custo_caminho(G_BFS, caminho_BFS)
+    dist_G_BFS = G_BFS.nodes[destino]["dis"]
 
-    print(f"BFS:\n\tCusto: {custo}\n\tCaminho: {caminho}")
+    print(f"BFS:\n\tCusto: {custo_BFS}\n\tCaminho: {caminho_BFS}\n\tDistancia: {dist_G_BFS}")
 
     """
     # ----------------------------------------
     # UCS
     # ----------------------------------------
     """
-    G = UCS(G_inicial, origem, destino)
-    caminho = obtem_caminho(G, origem, destino)
+    G_UCS = UCS(G_inicial, origem, destino)
+    caminho_UCS = obtem_caminho(G_UCS, origem, destino)
 
-    custo = calcula_custo_caminho(G, caminho)
+    custo_UCS = calcula_custo_caminho(G_UCS, caminho_UCS)
+    dist_G_UCS = G_UCS.nodes[destino]["dis"]
 
-    print(f"UCS:\n\tCusto: {custo}\n\tCaminho: {caminho}")
+    print(f"UCS:\n\tCusto: {custo_UCS}\n\tCaminho: {caminho_UCS}\n\tDistancia: {dist_G_UCS}")
 
     """
     # ----------------------------------------
     # A-star
     # ----------------------------------------
     """
+    G_AStar = AStar(G_inicial, origem, destino, Estimation)
+    caminho_AStar = obtem_caminho(G_AStar, origem, destino)
+
+    custo_AStar = calcula_custo_caminho(G_AStar, caminho_AStar)
+    dist_G_AStar = G_AStar.nodes[destino]["dis"]
+
+    print(f"A-star:\n\tCusto: {custo_AStar}\n\tCaminho: {caminho_AStar}\n\tDistancia: {dist_G_AStar}")
 
     if SHOW_GRAPH:
         print("OK! Pressione Enter pra finalizar...")
