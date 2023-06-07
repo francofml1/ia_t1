@@ -94,10 +94,6 @@ def BFS(G_inicial, source):
         G.nodes[v]["cor"] = "white"
         G.nodes[v]["dis"] = np.inf
         G.nodes[v]["custo"] = 0
-        
-        
-
-
 
     # Inicia o nó origem com cor cinza e distância zero
     G.nodes[source]["cor"] = "grey"
@@ -387,7 +383,12 @@ def main():
     custo_BFS = calcula_custo_caminho(G_BFS, caminho_BFS)
     dist_G_BFS = G_BFS.nodes[destino]["dis"]
 
-    print(f"BFS:\n\tCusto: {custo_BFS}\n\tCaminho: {caminho_BFS}\n\tDistancia: {dist_G_BFS}")
+    print(
+        f"BFS:\n"
+        f"\tCusto: {custo_BFS}\n"
+        f"\tCaminho: {caminho_BFS}\n"
+        f"\tDistancia: {dist_G_BFS}"
+    )
 
     """
     # ----------------------------------------
@@ -400,7 +401,12 @@ def main():
     custo_UCS = calcula_custo_caminho(G_UCS, caminho_UCS)
     dist_G_UCS = G_UCS.nodes[destino]["dis"]
 
-    print(f"UCS:\n\tCusto: {custo_UCS}\n\tCaminho: {caminho_UCS}\n\tDistancia: {dist_G_UCS}")
+    print(
+        f"UCS:\n"
+        f"\tCusto: {custo_UCS}\n"
+        f"\tCaminho: {caminho_UCS}\n"
+        f"\tDistancia: {dist_G_UCS}"
+    )
 
     """
     # ----------------------------------------
@@ -413,7 +419,12 @@ def main():
     custo_AStar = calcula_custo_caminho(G_AStar, caminho_AStar)
     dist_G_AStar = G_AStar.nodes[destino]["dis"]
 
-    print(f"A-star:\n\tCusto: {custo_AStar}\n\tCaminho: {caminho_AStar}\n\tDistancia: {dist_G_AStar}")
+    print(
+        f"A-star:\n"
+        f"\tCusto: {custo_AStar}\n"
+        f"\tCaminho: {caminho_AStar}\n"
+        f"\tDistancia: {dist_G_AStar}"
+    )
 
     if SHOW_GRAPH:
         print("OK! Pressione Enter pra finalizar...")
