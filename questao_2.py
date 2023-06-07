@@ -10,8 +10,8 @@ from collections import deque
 
 """ CONSTANTES: """
 
-SHOW_GRAPH = True
-# SHOW_GRAPH = False
+# SHOW_GRAPH = True
+SHOW_GRAPH = False
 
 
 def calcula_custo_caminho(G, caminho):
@@ -51,11 +51,14 @@ def obtem_caminho(G, s, t):
 
 
 def plot_grafo(G, u, my_pos, fig):
+    if isinstance(u, tuple):
+        u = u[0]
+        
     print(
-        f"no atual: {u[0]}, "
-        f"dis: {G.nodes[u[0]]['dis']}, "
-        f"cor: {G.nodes[u[0]]['cor']}, "
-        f"custo: {G.nodes[u[0]]['custo']}"
+        f"no atual: {u}, "
+        f"dis: {G.nodes[u]['dis']}, "
+        f"cor: {G.nodes[u]['cor']}, "
+        f"custo: {G.nodes[u]['custo']}"
     )
     color_map = []
     for x in G.nodes():
@@ -87,10 +90,13 @@ def BFS(G_inicial, source):
     for v in G.nodes() - {source}:
         G.nodes[v]["cor"] = "white"
         G.nodes[v]["dis"] = np.inf
+        G.nodes[v]["custo"] = 0
+        
 
     # Inicia o nó origem com cor cinza e distância zero
     G.nodes[source]["cor"] = "grey"
     G.nodes[source]["dis"] = 0
+    G.nodes[source]["custo"] = 0
 
     # Implementação de Fila FIFO (append (right), popleft)
     Q = deque()
@@ -146,6 +152,8 @@ def BFS(G_inicial, source):
 
 
 """## Algoritmo UCS (Custo Uniforme)"""
+
+
 # f(n) = g(n)
 def UCS(G_inicial, source, goal):
     # Faz uma copia do grafo
@@ -215,7 +223,6 @@ def UCS(G_inicial, source, goal):
 
         if SHOW_GRAPH:
             plot_grafo(G, u, my_pos, fig)
-
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
@@ -317,13 +324,7 @@ def main():
 
     custo = calcula_custo_caminho(G, caminho)
 
-    print(
-        f"BFS:\n" +
-        f"\tCusto: {custo}\n"+
-        f"\tCaminho: {caminho}"
-        f"\tCaminho: {caminho}"
-        
-        )
+    print(f"BFS:\n\tCusto: {custo}\n\tCaminho: {caminho}")
 
     """
     # ----------------------------------------
@@ -335,7 +336,7 @@ def main():
 
     custo = calcula_custo_caminho(G, caminho)
 
-    print(f"UCS:\n" f"\tCusto: {custo}\n" f"\tCaminho: {caminho}")
+    print(f"UCS:\n\tCusto: {custo}\n\tCaminho: {caminho}")
 
     """
     # ----------------------------------------
