@@ -291,7 +291,7 @@ def uniform_cost_search(labirinto: list, inicio: Celula, goal: Celula, viewer=No
                         fronteira.queue[index] = v
 
         if viewer is not None:
-            viewer.update(generated=fronteira, expanded=expandidos)
+            viewer.update(generated=fronteira.queue, expanded=expandidos)
             # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
@@ -305,12 +305,12 @@ def uniform_cost_search(labirinto: list, inicio: Celula, goal: Celula, viewer=No
 
 def a_star_search(labirinto, inicio, goal, viewer=None):
     # nos gerados e que podem ser expandidos (vermelhos)
-    fronteira = []
+    fronteira = PriorityQueue()
     # nos ja expandidos (amarelos)
     expandidos = set()
 
     # adiciona o no inicial na fronteira
-    fronteira.append(inicio)
+    fronteira.put(inicio)
 
     # variavel para armazenar o goal quando ele for encontrado.
     goal_encontrado = None
@@ -319,12 +319,9 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
     # existem nos para serem expandidos na fronteira. Se
     # acabarem os nos da fronteira antes do goal ser encontrado,
     # entao ele nao eh alcancavel.
-    while (len(fronteira) > 0) and (goal_encontrado is None):
-        # ordena a fronteira pela funcao custo
-        fronteira.sort(key=lambda x: x.f, reverse=True)
-
+    while (len(fronteira.queue) > 0) and (goal_encontrado is None):
         # seleciona o no de menor f(n) para ser expandido
-        no_atual = fronteira.pop()
+        no_atual = fronteira.get()
 
         # testa objetivo:
         if no_atual.y == goal.y and no_atual.x == goal.x:
@@ -342,19 +339,19 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
             # calcula função custo: f(n) = g(n) + h(n)
             v.f = custo_caminho(obtem_caminho(v)) + distancia(v, goal)
 
-            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
-                fronteira.append(v)
-            elif esta_contido(fronteira, v):
+            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira.queue, v)):
+                fronteira.put(v)
+            elif esta_contido(fronteira.queue, v):
                 # encontra no na fronteira
-                index = get_index(fronteira, v)
+                index = get_index(fronteira.queue, v)
 
                 if index > -1:
                     # atualiza o custo se o novo caminho tiver um custo menor
-                    if v.f < fronteira[index].f:
-                        fronteira[index] = v
+                    if v.f < fronteira.queue[index].f:
+                        fronteira.queue[index] = v
 
         if viewer is not None:
-            viewer.update(generated=fronteira, expanded=expandidos)
+            viewer.update(generated=fronteira.queue, expanded=expandidos)
             # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
@@ -403,14 +400,14 @@ def main():
     res_UCS = []
     res_AStar = []
 
-    # SHOW_GRAPH = True
-    SHOW_GRAPH = False
+    SHOW_GRAPH = True
+    # SHOW_GRAPH = False
     ZOOM = 30
 
     # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
     # random.seed(SEED)
-    N_LINHAS = 50
-    N_COLUNAS = 50
+    N_LINHAS = 20
+    N_COLUNAS = 20
     INICIO = Celula(y=0, x=0, anterior=None)
     GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
 
