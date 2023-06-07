@@ -1,4 +1,5 @@
 from time import time
+import networkx as nx
 
 
 class Results:
@@ -6,32 +7,28 @@ class Results:
         self,
         name="Nome",
         method=None,
-        labirinto=None,
-        inicio=None,
+        G_inicial: nx.Graph = None,
+        source=None,
         goal=None,
-        viewer=None,
+        estimation=[]
     ):
         self.name = name
         self.method = method
-        self.labirinto = labirinto
-        self.inicio = inicio
+        self.G_inicial = G_inicial
+        self.source = source
         self.goal = goal
-        self.viewer = viewer
+        self.estimation = estimation
 
         self.t0 = 0
         self.tf = 0
         self.tempo = 0
 
-        self.caminho = None
+        self.caminho = []
         self.custo_total = 0
         self.tamCaminho = 0
 
-        self.expandidos = None
         self.numExpandidos = 0
-
-        self.numGerados = 0
-
-        self.alcancado = False
+        self.G: nx.Graph = None
 
     def getTime(self):
         self.tempo = self.tf - self.t0
@@ -40,8 +37,8 @@ class Results:
     def run(self):
         if self.method is not None:
             self.t0 = time()
-            self.caminho, self.custo_total, self.expandidos = self.method(
-                self.labirinto, self.inicio, self.goal, self.viewer
+            self.G, self.caminho, self.custo_total, self.numExpandidos = self.method(
+                self.G_inicial, self.source, self.goal, self.estimation
             )
             self.tf = time()
             self.getTime()
@@ -53,7 +50,6 @@ class Results:
             else:
                 self.alcancado = True
                 self.tamCaminho = len(self.caminho) - 1
-                self.numExpandidos = len(self.expandidos)
 
     def printResults(self):
         if not self.alcancado:

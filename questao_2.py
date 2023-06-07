@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 from collections import deque
 from queue import PriorityQueue
+from results2 import Results
 
 """ CONSTANTES: """
 
@@ -83,7 +84,7 @@ def plot_grafo(G, u, my_pos, fig):
 
 
 # Implementação do algoritmo BFS
-def BFS(G_inicial, source):
+def BFS(G_inicial, source, goal, Estimation):
     # Faz uma copia do grafo
     G = G_inicial.copy()
 
@@ -136,7 +137,9 @@ def BFS(G_inicial, source):
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
-    return G, numExpandidos
+    caminho = obtem_caminho(G, source, goal)
+    custo_total = calcula_custo_caminho(G, caminho)
+    return G, caminho, custo_total, numExpandidos
 
 
 # ----------------------------------------------------------------
@@ -147,7 +150,7 @@ def BFS(G_inicial, source):
 
 # Implementação do algoritmo UCS
 # f(n) = g(n)
-def UCS(G_inicial, source, goal):
+def UCS(G_inicial, source, goal, Estimation):
     # Faz uma copia do grafo
     G = G_inicial.copy()
 
@@ -233,7 +236,9 @@ def UCS(G_inicial, source, goal):
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
-    return G, numExpandidos
+    caminho = obtem_caminho(G, source, goal)
+    custo_total = calcula_custo_caminho(G, caminho)
+    return G, caminho, custo_total, numExpandidos
 
 
 """## Algoritmo A-star"""
@@ -331,7 +336,9 @@ def AStar(G_inicial, source, goal, Estimation):
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
-    return G, numExpandidos
+    caminho = obtem_caminho(G, source, goal)
+    custo_total = calcula_custo_caminho(G, caminho)
+    return G, caminho, custo_total, numExpandidos
 
 
 def main():
@@ -413,63 +420,31 @@ def main():
     # destino = "Bucharest"
     destino = "Craiova"
 
+    result_BFS = Results("BFS", BFS, G_inicial, origem, destino)
+    result_UCS = Results("UCS", UCS, G_inicial, origem, destino)
+    result_AStar = Results("A-Star", AStar, G_inicial, origem, destino, Estimation)
+
     """
     # ----------------------------------------
     # BFS
     # ----------------------------------------
     """
-    G_BFS, nExpand_BFS = BFS(G_inicial, origem)
-    caminho_BFS = obtem_caminho(G_BFS, origem, destino)
-
-    custo_BFS = calcula_custo_caminho(G_BFS, caminho_BFS)
-    dist_G_BFS = G_BFS.nodes[destino]["dis"]
-
-    print(
-        f"BFS:\n"
-        f"\tCaminho: {caminho_BFS}\n"
-        f"\tCusto: {custo_BFS}\n"
-        f"\tNº Expandidos:: {nExpand_BFS}\n"
-        f"\tDistancia: {dist_G_BFS}"
-    )
-
+    result_BFS.run()
+    result_BFS.printResults()
     """
     # ----------------------------------------
     # UCS
     # ----------------------------------------
     """
-    G_UCS, nExpand_UCS = UCS(G_inicial, origem, destino)
-    caminho_UCS = obtem_caminho(G_UCS, origem, destino)
-
-    custo_UCS = calcula_custo_caminho(G_UCS, caminho_UCS)
-    dist_G_UCS = G_UCS.nodes[destino]["dis"]
-
-    print(
-        f"UCS:\n"
-        f"\tCaminho: {caminho_UCS}\n"
-        f"\tCusto: {custo_UCS}\n"
-        f"\tNº Expandidos:: {nExpand_UCS}\n"
-        f"\tDistancia: {dist_G_UCS}"
-    )
-
+    result_UCS.run()
+    result_UCS.printResults()
     """
     # ----------------------------------------
     # A-star
     # ----------------------------------------
     """
-    G_AStar, nExpand_AStar = AStar(G_inicial, origem, destino, Estimation)
-    caminho_AStar = obtem_caminho(G_AStar, origem, destino)
-
-    custo_AStar = calcula_custo_caminho(G_AStar, caminho_AStar)
-    dist_G_AStar = G_AStar.nodes[destino]["dis"]
-
-    print(
-        f"A-star:\n"
-        f"\tCaminho: {caminho_AStar}\n"
-        f"\tCusto: {custo_AStar}\n"
-        f"\tNº Expandidos:: {nExpand_AStar}\n"
-        f"\tDistancia: {dist_G_AStar}"
-    )
-
+    result_AStar.run()
+    result_AStar.printResults()
     if SHOW_GRAPH:
         print("OK! Pressione Enter pra finalizar...")
         input()
