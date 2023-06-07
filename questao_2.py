@@ -39,6 +39,44 @@ def estima_custo_h(cidade_atual, Estimation):
     return Estimation[cidade_atual]
 
 
+def obtem_caminho(G, s, t):
+    L = [t]
+    u = t
+    while u != s:
+        u = G.nodes[u]["pre"]
+        L.append(u)
+
+    L.reverse()
+
+    return L
+
+
+def plot_grafo(G, u, my_pos, fig):
+    print(
+        f"no atual: {u[0]}, "
+        f"dis: {G.nodes[u[0]]['dis']}, "
+        f"cor: {G.nodes[u[0]]['cor']}, "
+        f"custo: {G.nodes[u[0]]['custo']}"
+    )
+    color_map = []
+    for x in G.nodes():
+        color_map.append(G.nodes[x]["cor"])
+    nx.draw(
+        G,
+        pos=my_pos,
+        node_color=color_map,
+        with_labels=True,
+        edge_color="white",
+        font_color="red",
+        node_size=500,
+    )
+    labels = nx.get_edge_attributes(G, "weight")
+    nx.draw_networkx_edge_labels(G, my_pos, edge_labels=labels, font_size=10)
+    fig.set_facecolor("#4b70ab")
+    plt.waitforbuttonpress()
+    # plt.show()
+
+
 # Implementação do algoritmo BFS
 def BFS(G_inicial, source):
     # Faz uma copia do grafo
