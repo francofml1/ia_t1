@@ -286,7 +286,7 @@ def uniform_cost_search(labirinto: list, inicio: Celula, goal: Celula, viewer=No
                 index = get_index(fronteira.queue, v)
 
                 if index > -1:
-                    # atualiza o custo se o novo caminho tiver um custo menor
+                    # atualiza o nó na fronteira se o novo custo for menor
                     if v.f < fronteira.queue[index].f:
                         fronteira.queue[index] = v
 
