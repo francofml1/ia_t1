@@ -109,10 +109,12 @@ def BFS(G_inicial, source):
 
     # configuração para printar o grafo no mesmo formato sempre
     my_pos = nx.spring_layout(G, seed=3113794652)
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure("BFS", figsize=(8, 8))
 
     while len(Q) != 0:
         u = Q.popleft()
+
+        G.nodes[u]["cor"] = "blue"
 
         # Define os vizinhos para cinza
         for v in G.neighbors(u):
@@ -124,12 +126,13 @@ def BFS(G_inicial, source):
 
                 Q.append(v)
 
-        # marca o nó vizitado para cor preta
-        G.nodes[u]["cor"] = "black"
         numExpandidos += 1
 
         if SHOW_GRAPH:
             plot_grafo(G, u, my_pos, fig)
+
+        # marca o nó vizitado para cor preta
+        G.nodes[u]["cor"] = "black"
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
@@ -170,7 +173,7 @@ def UCS(G_inicial, source, goal):
 
     # configuração para printar o grafo no mesmo formato sempre
     my_pos = nx.spring_layout(G, seed=3113794652)
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure("UCS", figsize=(8, 8))
 
     while len(Q.queue) != 0:
         # seleciona o no de menor custo para ser expandido
@@ -190,9 +193,6 @@ def UCS(G_inicial, source, goal):
             break
 
         numExpandidos += 1
-
-        if SHOW_GRAPH:
-            plot_grafo(G, u, my_pos, fig)
 
         # calcula funcao custo f(u) = g(u)
         f_u = calcula_custo_g(G, obtem_caminho(G, source, u))
@@ -221,6 +221,9 @@ def UCS(G_inicial, source, goal):
                     G.nodes[v]["f"] = f_v
                     G.nodes[v]["pre"] = u
                     G.nodes[v]["dis"] = G.nodes[u]["dis"] + 1
+
+        if SHOW_GRAPH:
+            plot_grafo(G, u, my_pos, fig)
 
         # marca o nó vizitado para cor preta
         G.nodes[u]["cor"] = "black"
@@ -264,7 +267,7 @@ def AStar(G_inicial, source, goal, Estimation):
 
     # configuração para printar o grafo no mesmo formato sempre
     my_pos = nx.spring_layout(G, seed=3113794652)
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure("A-Star", figsize=(8, 8))
 
     while len(Q.queue) != 0:
         # seleciona o no de menor custo para ser expandido
@@ -284,9 +287,6 @@ def AStar(G_inicial, source, goal, Estimation):
             break
 
         numExpandidos += 1
-
-        if SHOW_GRAPH:
-            plot_grafo(G, u, my_pos, fig)
 
         # calcula funcao custo f(u) = g(u) + h(u)
         f_u = calcula_custo_g(G, obtem_caminho(G, source, u)) + estima_custo_h(
@@ -319,6 +319,9 @@ def AStar(G_inicial, source, goal, Estimation):
                     G.nodes[v]["f"] = f_v
                     G.nodes[v]["pre"] = u
                     G.nodes[v]["dis"] = G.nodes[u]["dis"] + 1
+
+        if SHOW_GRAPH:
+            plot_grafo(G, u, my_pos, fig)
 
         # marca o nó vizitado para cor preta
         G.nodes[u]["cor"] = "black"
@@ -405,7 +408,6 @@ def main():
         "Vaslui": 199,
         "Zerind": 374,
     }
-
     # Definições de origem e destino
     origem = "Arad"
     # destino = "Bucharest"
@@ -416,7 +418,7 @@ def main():
     # BFS
     # ----------------------------------------
     """
-    G_BFS = BFS(G_inicial, origem)
+    G_BFS, nExpand_BFS = BFS(G_inicial, origem)
     caminho_BFS = obtem_caminho(G_BFS, origem, destino)
 
     custo_BFS = calcula_custo_caminho(G_BFS, caminho_BFS)
@@ -424,8 +426,9 @@ def main():
 
     print(
         f"BFS:\n"
-        f"\tCusto: {custo_BFS}\n"
         f"\tCaminho: {caminho_BFS}\n"
+        f"\tCusto: {custo_BFS}\n"
+        f"\tNº Expandidos:: {nExpand_BFS}\n"
         f"\tDistancia: {dist_G_BFS}"
     )
 
@@ -434,7 +437,7 @@ def main():
     # UCS
     # ----------------------------------------
     """
-    G_UCS = UCS(G_inicial, origem, destino)
+    G_UCS, nExpand_UCS = UCS(G_inicial, origem, destino)
     caminho_UCS = obtem_caminho(G_UCS, origem, destino)
 
     custo_UCS = calcula_custo_caminho(G_UCS, caminho_UCS)
@@ -442,8 +445,9 @@ def main():
 
     print(
         f"UCS:\n"
-        f"\tCusto: {custo_UCS}\n"
         f"\tCaminho: {caminho_UCS}\n"
+        f"\tCusto: {custo_UCS}\n"
+        f"\tNº Expandidos:: {nExpand_UCS}\n"
         f"\tDistancia: {dist_G_UCS}"
     )
 
@@ -452,7 +456,7 @@ def main():
     # A-star
     # ----------------------------------------
     """
-    G_AStar = AStar(G_inicial, origem, destino, Estimation)
+    G_AStar, nExpand_AStar = AStar(G_inicial, origem, destino, Estimation)
     caminho_AStar = obtem_caminho(G_AStar, origem, destino)
 
     custo_AStar = calcula_custo_caminho(G_AStar, caminho_AStar)
@@ -460,8 +464,9 @@ def main():
 
     print(
         f"A-star:\n"
-        f"\tCusto: {custo_AStar}\n"
         f"\tCaminho: {caminho_AStar}\n"
+        f"\tCusto: {custo_AStar}\n"
+        f"\tNº Expandidos:: {nExpand_AStar}\n"
         f"\tDistancia: {dist_G_AStar}"
     )
 
