@@ -58,7 +58,7 @@ def plot_grafo(G, u, my_pos, fig):
         f"no atual: {u}, "
         f"dis: {G.nodes[u]['dis']}, "
         f"cor: {G.nodes[u]['cor']}, "
-        f"custo: {G.nodes[u]['custo']}"
+        f"f_n: {G.nodes[u]['f']}"
     )
     color_map = []
     for x in G.nodes():
@@ -93,12 +93,12 @@ def BFS(G_inicial, source):
     for v in G.nodes() - {source}:
         G.nodes[v]["cor"] = "white"
         G.nodes[v]["dis"] = np.inf
-        G.nodes[v]["custo"] = 0
+        G.nodes[v]["f"] = 0
 
     # Inicia o nó origem com cor cinza e distância zero
     G.nodes[source]["cor"] = "grey"
     G.nodes[source]["dis"] = 0
-    G.nodes[source]["custo"] = 0
+    G.nodes[source]["f"] = 0
 
     # Implementação de Fila FIFO (append (right), popleft)
     Q = deque()
@@ -148,16 +148,16 @@ def UCS(G_inicial, source, goal):
     for v in G.nodes() - {source}:
         G.nodes[v]["cor"] = "white"
         G.nodes[v]["dis"] = np.inf
-        G.nodes[v]["custo"] = 0
+        G.nodes[v]["f"] = 0
 
     # Inicia o nó origem com cor cinza, distância infinita e custo zero
     G.nodes[source]["cor"] = "grey"
     G.nodes[source]["dis"] = 0
-    G.nodes[source]["custo"] = 0
+    G.nodes[source]["f"] = 0
 
     # Implementação de Fila FIFO (append (right), popleft)
     Q = []
-    Q.append((source, G.nodes[source]["custo"]))
+    Q.append((source, G.nodes[source]["f"]))
 
     # configuração para printar o grafo no mesmo formato sempre
     my_pos = nx.spring_layout(G, seed=3113794652)
@@ -175,13 +175,13 @@ def UCS(G_inicial, source, goal):
             G.nodes[goal]["cor"] = "black"
             G.nodes[goal]["dis"] = G.nodes[u[0]]["dis"] + 1
             caminho = obtem_caminho(G, source, goal)
-            G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
+            G.nodes[v]["f"] = calcula_custo_g(G, caminho)
 
             if SHOW_GRAPH:
                 plot_grafo(G, u, my_pos, fig)
             break
 
-        custo_u = calcula_custo_g(G, obtem_caminho(G, source, u[0]))
+        f_u = calcula_custo_g(G, obtem_caminho(G, source, u[0]))
 
         # Define os vizinhos para cinza
         for v in G.neighbors(u[0]):
@@ -191,14 +191,14 @@ def UCS(G_inicial, source, goal):
                 G.nodes[v]["dis"] = G.nodes[u[0]]["dis"] + 1
                 G.nodes[v]["pre"] = u[0]
                 caminho = obtem_caminho(G, source, v)
-                G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
+                G.nodes[v]["f"] = calcula_custo_g(G, caminho)
 
-                Q.append((v, G.nodes[v]["custo"]))
+                Q.append((v, G.nodes[v]["f"]))
             elif G.nodes[v]["cor"] == "grey":
                 # caminho = obtem_caminho(G, source, v)
-                novo_custo = custo_u + G[u[0]][v]["weight"]
-                if G.nodes[v]["custo"] > novo_custo:
-                    G.nodes[v]["custo"] = novo_custo
+                f_v = f_u + G[u[0]][v]["weight"]
+                if G.nodes[v]["f"] > f_v:
+                    G.nodes[v]["f"] = f_v
                     G.nodes[v]["pre"] = u[0]
 
         # marca o nó vizitado para cor preta
@@ -225,16 +225,16 @@ def AStar(G_inicial, source, goal, Estimation):
     for v in G.nodes() - {source}:
         G.nodes[v]["cor"] = "white"
         G.nodes[v]["dis"] = np.inf
-        G.nodes[v]["custo"] = 0
+        G.nodes[v]["f"] = 0
 
     # Inicia o nó origem com cor cinza, distância infinita e custo zero
     G.nodes[source]["cor"] = "grey"
     G.nodes[source]["dis"] = 0
-    G.nodes[source]["custo"] = 0
+    G.nodes[source]["f"] = 0
 
     # Implementação de Fila FIFO (append (right), popleft)
     Q = []
-    Q.append((source, G.nodes[source]["custo"]))
+    Q.append((source, G.nodes[source]["f"]))
 
     # configuração para printar o grafo no mesmo formato sempre
     my_pos = nx.spring_layout(G, seed=3113794652)
@@ -252,13 +252,15 @@ def AStar(G_inicial, source, goal, Estimation):
             G.nodes[goal]["cor"] = "black"
             G.nodes[goal]["dis"] = G.nodes[u[0]]["dis"] + 1
             caminho = obtem_caminho(G, source, goal)
-            G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
+            G.nodes[v]["f"] = calcula_custo_g(G, caminho)
 
             if SHOW_GRAPH:
                 plot_grafo(G, u, my_pos, fig)
             break
 
-        custo_u = calcula_custo_g(G, obtem_caminho(G, source, u[0]))
+        f_u = calcula_custo_g(G, obtem_caminho(G, source, u[0])) + estima_custo_h(
+            u[0], Estimation
+        )
 
         # Define os vizinhos para cinza
         for v in G.neighbors(u[0]):
@@ -268,18 +270,21 @@ def AStar(G_inicial, source, goal, Estimation):
                 G.nodes[v]["dis"] = G.nodes[u[0]]["dis"] + 1
                 G.nodes[v]["pre"] = u[0]
                 caminho = obtem_caminho(G, source, v)
-                G.nodes[v]["custo"] = calcula_custo_g(G, caminho) + estima_custo_h(
+                G.nodes[v]["f"] = calcula_custo_g(G, caminho) + estima_custo_h(
                     v, Estimation
                 )
 
-                Q.append((v, G.nodes[v]["custo"]))
+                Q.append((v, G.nodes[v]["f"]))
             elif G.nodes[v]["cor"] == "grey":
                 # caminho = obtem_caminho(G, source, v)
-                novo_custo = (
-                    custo_u + G[u[0]][v]["weight"] + estima_custo_h(v, Estimation)
+                f_v = (
+                    calcula_custo_g(G, obtem_caminho(G, source, u[0]))
+                    + G[u[0]][v]["weight"]
+                    + estima_custo_h(v, Estimation)
                 )
-                if G.nodes[v]["custo"] > novo_custo:
-                    G.nodes[v]["custo"] = novo_custo
+                if G.nodes[v]["f"] > f_v:
+                    G.nodes[v]["f"] = f_v
+                    G.nodes[v]["dis"] = G.nodes[u[0]]["dis"] + 1
                     G.nodes[v]["pre"] = u[0]
 
         # marca o nó vizitado para cor preta
