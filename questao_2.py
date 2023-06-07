@@ -1,12 +1,10 @@
 import numpy as np
 from numpy import random
-import random
-import pandas as pd
-from math import sqrt
 import networkx as nx
 import matplotlib.pyplot as plt
 
 from collections import deque
+from queue import PriorityQueue
 
 """ CONSTANTES: """
 
@@ -53,12 +51,14 @@ def obtem_caminho(G, s, t):
 def plot_grafo(G, u, my_pos, fig):
     if isinstance(u, tuple):
         u = u[0]
-        
+
     print(
-        f"no atual: {u}, "
+        f"no atual: {u}, {{\n\t"
         f"dis: {G.nodes[u]['dis']}, "
         f"cor: {G.nodes[u]['cor']}, "
-        f"custo: {G.nodes[u]['custo']}"
+        f"f_n: {G.nodes[u]['f']}, "
+        f"pre: {G.nodes[u]['pre']}"
+        f"}}"
     )
     color_map = []
     for x in G.nodes():
@@ -79,24 +79,29 @@ def plot_grafo(G, u, my_pos, fig):
     # plt.show()
 
 
+"""## Algoritmo BFS (Busca em Largura)"""
+
+
 # Implementação do algoritmo BFS
 def BFS(G_inicial, source):
     # Faz uma copia do grafo
     G = G_inicial.copy()
 
-    color_map = []
+    # Contador de nós expandidos
+    numExpandidos = 0
 
     # Inicia todos os nós com cor branca e distância infinita
     for v in G.nodes() - {source}:
         G.nodes[v]["cor"] = "white"
         G.nodes[v]["dis"] = np.inf
-        G.nodes[v]["custo"] = 0
-        
+        G.nodes[v]["f"] = 0
+        G.nodes[v]["pre"] = ""
 
     # Inicia o nó origem com cor cinza e distância zero
     G.nodes[source]["cor"] = "grey"
     G.nodes[source]["dis"] = 0
-    G.nodes[source]["custo"] = 0
+    G.nodes[source]["f"] = 0
+    G.nodes[source]["pre"] = ""
 
     # Implementação de Fila FIFO (append (right), popleft)
     Q = deque()
@@ -121,31 +126,14 @@ def BFS(G_inicial, source):
 
         # marca o nó vizitado para cor preta
         G.nodes[u]["cor"] = "black"
+        numExpandidos += 1
 
         if SHOW_GRAPH:
             plot_grafo(G, u, my_pos, fig)
-            # print(f"no atual: {u}, dis: {G.nodes[u]['dis']}, cor: {G.nodes[u]['cor']}")
-
-            # color_map = []
-            # for x in G.nodes():
-            #     color_map.append(G.nodes[x]["cor"])
-            # nx.draw(
-            #     G,
-            #     pos=my_pos,
-            #     node_color=color_map,
-            #     with_labels=True,
-            #     edge_color="white",
-            #     font_color="red",
-            #     node_size=500,
-            # )
-            # labels = nx.get_edge_attributes(G, "weight")
-            # nx.draw_networkx_edge_labels(G, my_pos, edge_labels=labels, font_size=10)
-            # fig.set_facecolor("#4b70ab")
-            # plt.waitforbuttonpress()
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
-    return G
+    return G, numExpandidos
 
 
 # ----------------------------------------------------------------
@@ -154,85 +142,193 @@ def BFS(G_inicial, source):
 """## Algoritmo UCS (Custo Uniforme)"""
 
 
+# Implementação do algoritmo UCS
 # f(n) = g(n)
 def UCS(G_inicial, source, goal):
     # Faz uma copia do grafo
     G = G_inicial.copy()
 
-    color_map = []
+    # Contador de nós expandidos
+    numExpandidos = 1
 
     # Inicia todos os nós com cor branca, distância infinita e custo zero
     for v in G.nodes() - {source}:
         G.nodes[v]["cor"] = "white"
         G.nodes[v]["dis"] = np.inf
-        G.nodes[v]["custo"] = 0
+        G.nodes[v]["f"] = 0
+        G.nodes[v]["pre"] = ""
 
     # Inicia o nó origem com cor cinza, distância infinita e custo zero
     G.nodes[source]["cor"] = "grey"
     G.nodes[source]["dis"] = 0
-    G.nodes[source]["custo"] = 0
+    G.nodes[source]["f"] = 0
+    G.nodes[source]["pre"] = ""
 
-    # Implementação de Fila FIFO (append (right), popleft)
-    Q = []
-    Q.append((source, G.nodes[source]["custo"]))
+    # Implementação de Fila ordenada
+    Q = PriorityQueue()
+    Q.put((G.nodes[source]["f"], source))
 
     # configuração para printar o grafo no mesmo formato sempre
     my_pos = nx.spring_layout(G, seed=3113794652)
     fig = plt.figure(figsize=(8, 8))
 
-    while len(Q) != 0:
-        # ordena a fronteira pelo custo do caminho
-        Q.sort(key=lambda x: x[1], reverse=True)
-
+    while len(Q.queue) != 0:
         # seleciona o no de menor custo para ser expandido
-        u = Q.pop()
+        u = Q.get()[1]
+
+        G.nodes[u]["cor"] = "blue"
 
         # testa objetivo
-        if u[0] == goal:
+        if u == goal:
             G.nodes[goal]["cor"] = "black"
-            G.nodes[goal]["dis"] = G.nodes[u[0]]["dis"] + 1
+            G.nodes[goal]["dis"] = G.nodes[u]["dis"] + 1
             caminho = obtem_caminho(G, source, goal)
-            G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
+            G.nodes[v]["f"] = calcula_custo_g(G, caminho)
 
             if SHOW_GRAPH:
                 plot_grafo(G, u, my_pos, fig)
             break
 
-        custo_u = calcula_custo_caminho(G, obtem_caminho(G, source, u[0]))
-
-        # Define os vizinhos para cinza
-        for v in G.neighbors(u[0]):
-            if G.nodes[v]["cor"] == "white":
-                G.nodes[v]["cor"] = "grey"
-
-                G.nodes[v]["dis"] = G.nodes[u[0]]["dis"] + 1
-                G.nodes[v]["pre"] = u[0]
-                caminho = obtem_caminho(G, source, v)
-                G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
-
-                Q.append((v, G.nodes[v]["custo"]))
-            elif G.nodes[v]["cor"] == "grey":
-                # caminho = obtem_caminho(G, source, v)
-                novo_custo = custo_u + G[u[0]][v]["weight"]
-                if G.nodes[v]["custo"] > novo_custo:
-                    G.nodes[v]["custo"] = novo_custo
-                    G.nodes[v]["pre"] = u[0]
-
-        # marca o nó vizitado para cor preta
-        G.nodes[u[0]]["cor"] = "black"
+        numExpandidos += 1
 
         if SHOW_GRAPH:
             plot_grafo(G, u, my_pos, fig)
 
+        # calcula funcao custo f(u) = g(u)
+        f_u = calcula_custo_g(G, obtem_caminho(G, source, u))
+
+        for v in G.neighbors(u):
+            # verifica se v não foi visitado e não está na fronteira
+            if G.nodes[v]["cor"] == "white":
+                G.nodes[v]["dis"] = G.nodes[u]["dis"] + 1
+                # define no atual como anterior ao no v
+                G.nodes[v]["pre"] = u
+
+                # calcula função custo f(v)
+                G.nodes[v]["f"] = f_u + G[u][v]["weight"]
+
+                # adiciona no à fronteira
+                G.nodes[v]["cor"] = "grey"
+                Q.put((G.nodes[v]["f"], v))
+
+            # verifica se o nó está na fronteira
+            elif G.nodes[v]["cor"] == "grey":
+                # calcula função custo f(v)
+                f_v = f_u + G[u][v]["weight"]
+
+                # atualiza o no na fronteira se o novo custo for menor
+                if G.nodes[v]["f"] > f_v:
+                    G.nodes[v]["f"] = f_v
+                    G.nodes[v]["pre"] = u
+                    G.nodes[v]["dis"] = G.nodes[u]["dis"] + 1
+
+        # marca o nó vizitado para cor preta
+        G.nodes[u]["cor"] = "black"
+
+        # if SHOW_GRAPH:
+        #     plot_grafo(G, u, my_pos, fig)
+
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
-    return G
+    return G, numExpandidos
 
 
 """## Algoritmo A-star"""
 
-# Implemente aqui o algoritmo A-star
+
+# Implementação do algoritmo A-star
 # f(n) = g(n) + h(n)
+def AStar(G_inicial, source, goal, Estimation):
+    # Faz uma copia do grafo
+    G = G_inicial.copy()
+
+    # Contador de nós expandidos
+    numExpandidos = 1
+
+    # Inicia todos os nós com cor branca, distância infinita e custo zero
+    for v in G.nodes() - {source}:
+        G.nodes[v]["cor"] = "white"
+        G.nodes[v]["dis"] = np.inf
+        G.nodes[v]["f"] = 0
+        G.nodes[v]["pre"] = ""
+
+    # Inicia o nó origem com cor cinza, distância infinita e custo zero
+    G.nodes[source]["cor"] = "grey"
+    G.nodes[source]["dis"] = 0
+    G.nodes[source]["f"] = 0
+    G.nodes[source]["pre"] = ""
+
+    # Implementação de Fila ordenada
+    Q = PriorityQueue()
+    Q.put((G.nodes[source]["f"], source))
+
+    # configuração para printar o grafo no mesmo formato sempre
+    my_pos = nx.spring_layout(G, seed=3113794652)
+    fig = plt.figure(figsize=(8, 8))
+
+    while len(Q.queue) != 0:
+        # seleciona o no de menor custo para ser expandido
+        u = Q.get()[1]
+
+        G.nodes[u]["cor"] = "blue"
+
+        # testa objetivo
+        if u == goal:
+            G.nodes[goal]["cor"] = "black"
+            G.nodes[goal]["dis"] = G.nodes[u]["dis"] + 1
+            caminho = obtem_caminho(G, source, goal)
+            G.nodes[v]["f"] = calcula_custo_g(G, caminho)
+
+            if SHOW_GRAPH:
+                plot_grafo(G, u, my_pos, fig)
+            break
+
+        numExpandidos += 1
+
+        if SHOW_GRAPH:
+            plot_grafo(G, u, my_pos, fig)
+
+        # calcula funcao custo f(u) = g(u) + h(u)
+        f_u = calcula_custo_g(G, obtem_caminho(G, source, u)) + estima_custo_h(
+            u, Estimation
+        )
+
+        for v in G.neighbors(u):
+            # verifica se v não foi visitado e não está na fronteira
+            if G.nodes[v]["cor"] == "white":
+                G.nodes[v]["dis"] = G.nodes[u]["dis"] + 1
+                # define no atual como anterior ao no v
+                G.nodes[v]["pre"] = u
+
+                # calcula função custo f(v)
+                G.nodes[v]["f"] = (
+                    f_u + G[u][v]["weight"] + estima_custo_h(v, Estimation)
+                )
+
+                # adiciona no à fronteira
+                G.nodes[v]["cor"] = "grey"
+                Q.put((G.nodes[v]["f"], v))
+
+            # verifica se o nó está na fronteira
+            elif G.nodes[v]["cor"] == "grey":
+                # calcula função custo f(v)
+                f_v = f_u + G[u][v]["weight"] + estima_custo_h(v, Estimation)
+
+                # atualiza o no na fronteira se o novo custo for menor
+                if G.nodes[v]["f"] > f_v:
+                    G.nodes[v]["f"] = f_v
+                    G.nodes[v]["pre"] = u
+                    G.nodes[v]["dis"] = G.nodes[u]["dis"] + 1
+
+        # marca o nó vizitado para cor preta
+        G.nodes[u]["cor"] = "black"
+
+        # if SHOW_GRAPH:
+        #     plot_grafo(G, u, my_pos, fig)
+
+    # Grafo G retornado contem as informações de distância
+    # e cores desde o nó origem a todos os demais nós
+    return G, numExpandidos
 
 
 def main():
@@ -312,37 +408,62 @@ def main():
 
     # Definições de origem e destino
     origem = "Arad"
-    destino = "Bucharest"
+    # destino = "Bucharest"
+    destino = "Craiova"
 
     """
     # ----------------------------------------
     # BFS
     # ----------------------------------------
     """
-    G = BFS(G_inicial, origem)
-    caminho = obtem_caminho(G, origem, destino)
+    G_BFS = BFS(G_inicial, origem)
+    caminho_BFS = obtem_caminho(G_BFS, origem, destino)
 
-    custo = calcula_custo_caminho(G, caminho)
+    custo_BFS = calcula_custo_caminho(G_BFS, caminho_BFS)
+    dist_G_BFS = G_BFS.nodes[destino]["dis"]
 
-    print(f"BFS:\n\tCusto: {custo}\n\tCaminho: {caminho}")
+    print(
+        f"BFS:\n"
+        f"\tCusto: {custo_BFS}\n"
+        f"\tCaminho: {caminho_BFS}\n"
+        f"\tDistancia: {dist_G_BFS}"
+    )
 
     """
     # ----------------------------------------
     # UCS
     # ----------------------------------------
     """
-    G = UCS(G_inicial, origem, destino)
-    caminho = obtem_caminho(G, origem, destino)
+    G_UCS = UCS(G_inicial, origem, destino)
+    caminho_UCS = obtem_caminho(G_UCS, origem, destino)
 
-    custo = calcula_custo_caminho(G, caminho)
+    custo_UCS = calcula_custo_caminho(G_UCS, caminho_UCS)
+    dist_G_UCS = G_UCS.nodes[destino]["dis"]
 
-    print(f"UCS:\n\tCusto: {custo}\n\tCaminho: {caminho}")
+    print(
+        f"UCS:\n"
+        f"\tCusto: {custo_UCS}\n"
+        f"\tCaminho: {caminho_UCS}\n"
+        f"\tDistancia: {dist_G_UCS}"
+    )
 
     """
     # ----------------------------------------
     # A-star
     # ----------------------------------------
     """
+    G_AStar = AStar(G_inicial, origem, destino, Estimation)
+    caminho_AStar = obtem_caminho(G_AStar, origem, destino)
+
+    custo_AStar = calcula_custo_caminho(G_AStar, caminho_AStar)
+    dist_G_AStar = G_AStar.nodes[destino]["dis"]
+
+    print(
+        f"A-star:\n"
+        f"\tCusto: {custo_AStar}\n"
+        f"\tCaminho: {caminho_AStar}\n"
+        f"\tDistancia: {dist_G_AStar}"
+    )
 
     if SHOW_GRAPH:
         print("OK! Pressione Enter pra finalizar...")

@@ -1,6 +1,8 @@
 import random
+import numpy as np
 
 from collections import deque
+from queue import PriorityQueue
 from viewer import MazeViewer
 from math import inf, sqrt
 from results import Results
@@ -31,7 +33,7 @@ class Celula:
         self.y = y
         self.x = x
         self.anterior = anterior
-        self.custo = 0
+        self.f = np.inf
 
     def __eq__(self, other):
         if not isinstance(other, Celula):
@@ -43,6 +45,13 @@ class Celula:
     def __hash__(self):
         # necessary for instances to behave sanely in dicts and sets.
         return hash((self.x, self.y))
+
+    def __lt__(self, other):
+        if not isinstance(other, Celula):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.f < other.f
 
 
 def distancia(celula_1, celula_2):
@@ -234,14 +243,14 @@ def depth_first_search(labirinto, inicio, goal, viewer=None):
     return caminho, custo, expandidos
 
 
-def uniform_cost_search(labirinto, inicio, goal, viewer=None):
+def uniform_cost_search(labirinto: list, inicio: Celula, goal: Celula, viewer=None):
     # nos gerados e que podem ser expandidos (vermelhos)
-    fronteira = []
+    fronteira = PriorityQueue()
     # nos ja expandidos (amarelos)
     expandidos = set()
 
     # adiciona o no inicial na fronteira
-    fronteira.append(inicio)
+    fronteira.put(inicio)
 
     # variavel para armazenar o goal quando ele for encontrado.
     goal_encontrado = None
@@ -250,12 +259,9 @@ def uniform_cost_search(labirinto, inicio, goal, viewer=None):
     # existem nos para serem expandidos na fronteira. Se
     # acabarem os nos da fronteira antes do goal ser encontrado,
     # entao ele nao eh alcancavel.
-    while (len(fronteira) > 0) and (goal_encontrado is None):
-        # ordena a fronteira pelo custo do caminho
-        fronteira.sort(key=lambda x: x.custo, reverse=True)
-
+    while (len(fronteira.queue) > 0) and (goal_encontrado is None):
         # seleciona o no de menor custo para ser expandido
-        no_atual = fronteira.pop()
+        no_atual = fronteira.get()
 
         # testa objetivo:
         if no_atual.y == goal.y and no_atual.x == goal.x:
@@ -271,21 +277,21 @@ def uniform_cost_search(labirinto, inicio, goal, viewer=None):
 
         for v in vizinhos:
             # calcula o custo
-            v.custo = custo_caminho(obtem_caminho(v))
+            v.f = custo_caminho(obtem_caminho(v))
 
-            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
-                fronteira.append(v)
-            elif esta_contido(fronteira, v):
+            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira.queue, v)):
+                fronteira.put(v)
+            elif esta_contido(fronteira.queue, v):
                 # encontra no na fronteira
-                index = get_index(fronteira, v)
+                index = get_index(fronteira.queue, v)
 
                 if index > -1:
-                    # atualiza o custo se o novo caminho tiver um custo menor
-                    if v.custo < fronteira[index].custo:
-                        fronteira[index] = v
+                    # atualiza o nó na fronteira se o novo custo for menor
+                    if v.f < fronteira.queue[index].f:
+                        fronteira.queue[index] = v
 
         if viewer is not None:
-            viewer.update(generated=fronteira, expanded=expandidos)
+            viewer.update(generated=fronteira.queue, expanded=expandidos)
             # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
@@ -299,12 +305,12 @@ def uniform_cost_search(labirinto, inicio, goal, viewer=None):
 
 def a_star_search(labirinto, inicio, goal, viewer=None):
     # nos gerados e que podem ser expandidos (vermelhos)
-    fronteira = []
+    fronteira = PriorityQueue()
     # nos ja expandidos (amarelos)
     expandidos = set()
 
     # adiciona o no inicial na fronteira
-    fronteira.append(inicio)
+    fronteira.put(inicio)
 
     # variavel para armazenar o goal quando ele for encontrado.
     goal_encontrado = None
@@ -313,12 +319,9 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
     # existem nos para serem expandidos na fronteira. Se
     # acabarem os nos da fronteira antes do goal ser encontrado,
     # entao ele nao eh alcancavel.
-    while (len(fronteira) > 0) and (goal_encontrado is None):
-        # ordena a fronteira pelo custo do caminho
-        fronteira.sort(key=lambda x: x.custo, reverse=True)
-
-        # seleciona o no de menor custo para ser expandido
-        no_atual = fronteira.pop()
+    while (len(fronteira.queue) > 0) and (goal_encontrado is None):
+        # seleciona o no de menor f(n) para ser expandido
+        no_atual = fronteira.get()
 
         # testa objetivo:
         if no_atual.y == goal.y and no_atual.x == goal.x:
@@ -333,22 +336,22 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
         vizinhos = celulas_vizinhas_livres(no_atual, labirinto)
 
         for v in vizinhos:
-            # calcula o custo
-            v.custo = custo_caminho(obtem_caminho(v)) + distancia(v, goal)
+            # calcula função custo: f(n) = g(n) + h(n)
+            v.f = custo_caminho(obtem_caminho(v)) + distancia(v, goal)
 
-            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
-                fronteira.append(v)
-            elif esta_contido(fronteira, v):
+            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira.queue, v)):
+                fronteira.put(v)
+            elif esta_contido(fronteira.queue, v):
                 # encontra no na fronteira
-                index = get_index(fronteira, v)
+                index = get_index(fronteira.queue, v)
 
                 if index > -1:
                     # atualiza o custo se o novo caminho tiver um custo menor
-                    if v.custo < fronteira[index].custo:
-                        fronteira[index] = v
+                    if v.f < fronteira.queue[index].f:
+                        fronteira.queue[index] = v
 
         if viewer is not None:
-            viewer.update(generated=fronteira, expanded=expandidos)
+            viewer.update(generated=fronteira.queue, expanded=expandidos)
             # viewer.pause()
 
     caminho = obtem_caminho(goal_encontrado)
@@ -404,7 +407,7 @@ def main():
     # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
     # random.seed(SEED)
     N_LINHAS = 20
-    N_COLUNAS = 30
+    N_COLUNAS = 20
     INICIO = Celula(y=0, x=0, anterior=None)
     GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
 
@@ -434,7 +437,12 @@ def main():
                 labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="UCS"
             )
             viewer_AStar = MazeViewer(
-                labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="A-Star"
+                labirinto,
+                INICIO,
+                GOAL,
+                step_time_miliseconds=20,
+                zoom=ZOOM,
+                name="A-Star",
             )
 
         result_BFS = Results(
@@ -470,7 +478,7 @@ def main():
         result_UCS.run()
         # result_UCS.printResults()
         res_UCS.append(result_UCS)
-        
+
         # ----------------------------------------
         # A-Star Search
         # ----------------------------------------
@@ -479,7 +487,6 @@ def main():
         res_AStar.append(result_AStar)
 
         print("+++++++++++++++++++++++++")
-
 
     print("=========================")
 
@@ -497,11 +504,11 @@ def main():
     res_media_DFS.printResults()
     res_media_UCS.printResults()
     res_media_AStar.printResults()
-    
 
     if SHOW_GRAPH:
         print("OK! Pressione Enter pra finalizar...")
         input()
+
 
 if __name__ == "__main__":
     main()
