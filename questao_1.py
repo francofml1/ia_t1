@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 from collections import deque
 from viewer import MazeViewer
@@ -31,7 +32,7 @@ class Celula:
         self.y = y
         self.x = x
         self.anterior = anterior
-        self.custo = 0
+        self.f = np.inf
 
     def __eq__(self, other):
         if not isinstance(other, Celula):
@@ -271,7 +272,7 @@ def uniform_cost_search(labirinto, inicio, goal, viewer=None):
 
         for v in vizinhos:
             # calcula o custo
-            v.custo = custo_caminho(obtem_caminho(v))
+            v.f = custo_caminho(obtem_caminho(v))
 
             if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
                 fronteira.append(v)
@@ -281,7 +282,7 @@ def uniform_cost_search(labirinto, inicio, goal, viewer=None):
 
                 if index > -1:
                     # atualiza o custo se o novo caminho tiver um custo menor
-                    if v.custo < fronteira[index].custo:
+                    if v.f < fronteira.queue[index].f:
                         fronteira[index] = v
 
         if viewer is not None:
@@ -314,10 +315,10 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
     # acabarem os nos da fronteira antes do goal ser encontrado,
     # entao ele nao eh alcancavel.
     while (len(fronteira) > 0) and (goal_encontrado is None):
-        # ordena a fronteira pelo custo do caminho
-        fronteira.sort(key=lambda x: x.custo, reverse=True)
+        # ordena a fronteira pela funcao custo
+        fronteira.sort(key=lambda x: x.f, reverse=True)
 
-        # seleciona o no de menor custo para ser expandido
+        # seleciona o no de menor f(n) para ser expandido
         no_atual = fronteira.pop()
 
         # testa objetivo:
@@ -333,8 +334,8 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
         vizinhos = celulas_vizinhas_livres(no_atual, labirinto)
 
         for v in vizinhos:
-            # calcula o custo
-            v.custo = custo_caminho(obtem_caminho(v)) + distancia(v, goal)
+            # calcula função custo: f(n) = g(n) + h(n)
+            v.f = custo_caminho(obtem_caminho(v)) + distancia(v, goal)
 
             if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira, v)):
                 fronteira.append(v)
@@ -344,7 +345,7 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
 
                 if index > -1:
                     # atualiza o custo se o novo caminho tiver um custo menor
-                    if v.custo < fronteira[index].custo:
+                    if v.f < fronteira[index].f:
                         fronteira[index] = v
 
         if viewer is not None:
@@ -434,7 +435,12 @@ def main():
                 labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="UCS"
             )
             viewer_AStar = MazeViewer(
-                labirinto, INICIO, GOAL, step_time_miliseconds=20, zoom=ZOOM, name="A-Star"
+                labirinto,
+                INICIO,
+                GOAL,
+                step_time_miliseconds=20,
+                zoom=ZOOM,
+                name="A-Star",
             )
 
         result_BFS = Results(
@@ -470,7 +476,7 @@ def main():
         result_UCS.run()
         # result_UCS.printResults()
         res_UCS.append(result_UCS)
-        
+
         # ----------------------------------------
         # A-Star Search
         # ----------------------------------------
@@ -479,7 +485,6 @@ def main():
         res_AStar.append(result_AStar)
 
         print("+++++++++++++++++++++++++")
-
 
     print("=========================")
 
@@ -497,11 +502,11 @@ def main():
     res_media_DFS.printResults()
     res_media_UCS.printResults()
     res_media_AStar.printResults()
-    
 
     if SHOW_GRAPH:
         print("OK! Pressione Enter pra finalizar...")
         input()
+
 
 if __name__ == "__main__":
     main()
