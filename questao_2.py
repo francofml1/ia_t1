@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 
 from collections import deque
 
+""" CONSTANTES: """
+
+# SHOW_GRAPH = True
+SHOW_GRAPH = False
+
 
 
 def calcula_custo_caminho(G, caminho):
@@ -35,53 +40,85 @@ def estima_custo_h(cidade_atual, Estimation):
 
 
 # Implementação do algoritmo BFS
-def BFS(G_inicial, s):
-
+def BFS(G_inicial, source):
+    # Faz uma copia do grafo
     G = G_inicial.copy()
 
-    # INICIALIZACAO
-    for v in G.nodes() - {s}:
-        G.nodes[v]['cor'] = 'branco'
-        G.nodes[v]['dis'] = np.inf
+    color_map = []
 
-    G.nodes[s]['cor'] = 'cinza'
-    G.nodes[s]['dis'] = 0
+    # Inicia todos os nós com cor branca e distância infinita
+    for v in G.nodes() - {source}:
+        G.nodes[v]["cor"] = "white"
+        G.nodes[v]["dis"] = np.inf
 
-    # Fila (append (right), popleft)
+    # Inicia o nó origem com cor cinza e distância zero
+    G.nodes[source]["cor"] = "grey"
+    G.nodes[source]["dis"] = 0
+
+    # Implementação de Fila FIFO (append (right), popleft)
     Q = deque()
-    Q.append(s)
+    Q.append(source)
+
+    # configuração para printar o grafo no mesmo formato sempre
+    my_pos = nx.spring_layout(G, seed=3113794652)
+
     while len(Q) != 0:
         u = Q.popleft()
 
+        # Define os vizinhos para cinza
         for v in G.neighbors(u):
-            if G.nodes[v]['cor'] == 'branco':
-                G.nodes[v]['cor'] = 'cinza'
-                G.nodes[v]['dis'] = G.nodes[u]['dis'] + 1
-                G.nodes[v]['pre'] = u
+            if G.nodes[v]["cor"] == "white":
+                G.nodes[v]["cor"] = "grey"
+
+                G.nodes[v]["dis"] = G.nodes[u]["dis"] + 1
+                G.nodes[v]["pre"] = u
 
                 Q.append(v)
 
-        G.nodes[u]['cor'] = 'preto'
 
-        #print(u, G.nodes[u]['dis'], G.nodes[u]['cor'])
+        # marca o nó vizitado para cor preta
+        G.nodes[u]["cor"] = "black"
+
+        if SHOW_GRAPH:
+            print(f"no atual: {u}, dis: {G.nodes[u]['dis']}, cor: {G.nodes[u]['cor']}")
+
+            color_map = []
+            for x in G.nodes():
+                color_map.append(G.nodes[x]["cor"])
+            fig = plt.figure(figsize=(8,8))
+            nx.draw(
+                G,
+                pos=my_pos,
+                node_color=color_map,
+                with_labels=True,
+                edge_color="white",
+                font_color="red",
+                node_size=500,
+            )
+            labels = nx.get_edge_attributes(G, "weight")
+            nx.draw_networkx_edge_labels(G, my_pos, edge_labels=labels, font_size=10)
+            fig.set_facecolor("#4b70ab")
+            plt.waitforbuttonpress()
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
     return G
 
-#----------------------------------------------------------------
+
+# ----------------------------------------------------------------
+
 
 def caminho_minimo_BFS(G, s, t):
-
     L = [t]
     u = t
     while u != s:
-        u = G.nodes[u]['pre']
+        u = G.nodes[u]["pre"]
         L.append(u)
 
     L.reverse()
 
     return L
+
 
 """## Algoritmo UCS (Custo Uniforme)"""
 
@@ -89,19 +126,15 @@ def caminho_minimo_BFS(G, s, t):
 # f(n) = g(n)
 
 
-
 """## Algoritmo A-star"""
 
 # Implemente aqui o algoritmo A-star
 # f(n) = g(n) + h(n)
 
+
 def main():
     print("Starting")
 
-    SHOW_GRAPH = True
-    # SHOW_GRAPH = False
-
-    
     G_inicial = nx.Graph()
 
     # inicializando manualmente as cidades (vérticies) e
@@ -134,10 +167,10 @@ def main():
         ]
     )
 
-    if SHOW_GRAPH:
-        # Plotando para conferir
-        nx.draw(G_inicial, with_labels=True)
-        plt.show()
+    # if SHOW_GRAPH:
+    #     # Plotando para conferir
+    #     nx.draw(G_inicial, with_labels=True)
+    #     plt.show()
 
     # Estimativa das distâncias de todas as cidades com destino
     # para Bucharest, heurísticas h(n)
@@ -165,8 +198,8 @@ def main():
     }
 
     # Definições de origem e destino
-    origem = 'Arad'
-    destino = 'Bucharest'
+    origem = "Arad"
+    destino = "Bucharest"
 
     # BFS
     G = BFS(G_inicial, origem)
@@ -174,13 +207,18 @@ def main():
 
     custo = calcula_custo_caminho(G, caminho)
 
-    print(f'Custo: {custo}\t->\tCaminho: {caminho}')
+    print(f"Custo: {custo}\t->\tCaminho: {caminho}")
 
     # Chame aqui apropriadamente os algoritmos para resolver o problema
 
     # UCS
 
     # A-star
+
+    if SHOW_GRAPH:
+        print("OK! Pressione Enter pra finalizar...")
+        input()
+
 
 if __name__ == "__main__":
     main()
