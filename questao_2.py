@@ -10,9 +10,8 @@ from collections import deque
 
 """ CONSTANTES: """
 
-# SHOW_GRAPH = True
-SHOW_GRAPH = False
-
+SHOW_GRAPH = True
+# SHOW_GRAPH = False
 
 
 def calcula_custo_caminho(G, caminho):
@@ -99,6 +98,7 @@ def BFS(G_inicial, source):
 
     # configuração para printar o grafo no mesmo formato sempre
     my_pos = nx.spring_layout(G, seed=3113794652)
+    fig = plt.figure(figsize=(8, 8))
 
     while len(Q) != 0:
         u = Q.popleft()
@@ -113,30 +113,29 @@ def BFS(G_inicial, source):
 
                 Q.append(v)
 
-
         # marca o nó vizitado para cor preta
         G.nodes[u]["cor"] = "black"
 
         if SHOW_GRAPH:
-            print(f"no atual: {u}, dis: {G.nodes[u]['dis']}, cor: {G.nodes[u]['cor']}")
+            plot_grafo(G, u, my_pos, fig)
+            # print(f"no atual: {u}, dis: {G.nodes[u]['dis']}, cor: {G.nodes[u]['cor']}")
 
-            color_map = []
-            for x in G.nodes():
-                color_map.append(G.nodes[x]["cor"])
-            fig = plt.figure(figsize=(8,8))
-            nx.draw(
-                G,
-                pos=my_pos,
-                node_color=color_map,
-                with_labels=True,
-                edge_color="white",
-                font_color="red",
-                node_size=500,
-            )
-            labels = nx.get_edge_attributes(G, "weight")
-            nx.draw_networkx_edge_labels(G, my_pos, edge_labels=labels, font_size=10)
-            fig.set_facecolor("#4b70ab")
-            plt.waitforbuttonpress()
+            # color_map = []
+            # for x in G.nodes():
+            #     color_map.append(G.nodes[x]["cor"])
+            # nx.draw(
+            #     G,
+            #     pos=my_pos,
+            #     node_color=color_map,
+            #     with_labels=True,
+            #     edge_color="white",
+            #     font_color="red",
+            #     node_size=500,
+            # )
+            # labels = nx.get_edge_attributes(G, "weight")
+            # nx.draw_networkx_edge_labels(G, my_pos, edge_labels=labels, font_size=10)
+            # fig.set_facecolor("#4b70ab")
+            # plt.waitforbuttonpress()
 
     # Grafo G retornado contem as informações de distância
     # e cores desde o nó origem a todos os demais nós
@@ -146,22 +145,81 @@ def BFS(G_inicial, source):
 # ----------------------------------------------------------------
 
 
-def caminho_minimo_BFS(G, s, t):
-    L = [t]
-    u = t
-    while u != s:
-        u = G.nodes[u]["pre"]
-        L.append(u)
-
-    L.reverse()
-
-    return L
-
-
 """## Algoritmo UCS (Custo Uniforme)"""
-
-# Implemente aqui o algoritmo UCS (Custo Uniforme)
 # f(n) = g(n)
+def UCS(G_inicial, source, goal):
+    # Faz uma copia do grafo
+    G = G_inicial.copy()
+
+    color_map = []
+
+    # Inicia todos os nós com cor branca, distância infinita e custo zero
+    for v in G.nodes() - {source}:
+        G.nodes[v]["cor"] = "white"
+        G.nodes[v]["dis"] = np.inf
+        G.nodes[v]["custo"] = 0
+
+    # Inicia o nó origem com cor cinza, distância infinita e custo zero
+    G.nodes[source]["cor"] = "grey"
+    G.nodes[source]["dis"] = 0
+    G.nodes[source]["custo"] = 0
+
+    # Implementação de Fila FIFO (append (right), popleft)
+    Q = []
+    Q.append((source, G.nodes[source]["custo"]))
+
+    # configuração para printar o grafo no mesmo formato sempre
+    my_pos = nx.spring_layout(G, seed=3113794652)
+    fig = plt.figure(figsize=(8, 8))
+
+    while len(Q) != 0:
+        # ordena a fronteira pelo custo do caminho
+        Q.sort(key=lambda x: x[1], reverse=True)
+
+        # seleciona o no de menor custo para ser expandido
+        u = Q.pop()
+
+        # testa objetivo
+        if u[0] == goal:
+            G.nodes[goal]["cor"] = "black"
+            G.nodes[goal]["dis"] = G.nodes[u[0]]["dis"] + 1
+            caminho = obtem_caminho(G, source, goal)
+            G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
+
+            if SHOW_GRAPH:
+                plot_grafo(G, u, my_pos, fig)
+            break
+
+        custo_u = calcula_custo_caminho(G, obtem_caminho(G, source, u[0]))
+
+        # Define os vizinhos para cinza
+        for v in G.neighbors(u[0]):
+            if G.nodes[v]["cor"] == "white":
+                G.nodes[v]["cor"] = "grey"
+
+                G.nodes[v]["dis"] = G.nodes[u[0]]["dis"] + 1
+                G.nodes[v]["pre"] = u[0]
+                caminho = obtem_caminho(G, source, v)
+                G.nodes[v]["custo"] = calcula_custo_g(G, caminho)
+
+                Q.append((v, G.nodes[v]["custo"]))
+            elif G.nodes[v]["cor"] == "grey":
+                # caminho = obtem_caminho(G, source, v)
+                novo_custo = custo_u + G[u[0]][v]["weight"]
+                if G.nodes[v]["custo"] > novo_custo:
+                    G.nodes[v]["custo"] = novo_custo
+                    G.nodes[v]["pre"] = u[0]
+
+        # marca o nó vizitado para cor preta
+        G.nodes[u[0]]["cor"] = "black"
+
+        if SHOW_GRAPH:
+            plot_grafo(G, u, my_pos, fig)
+
+
+    # Grafo G retornado contem as informações de distância
+    # e cores desde o nó origem a todos os demais nós
+    return G
 
 
 """## Algoritmo A-star"""
@@ -207,8 +265,18 @@ def main():
 
     # if SHOW_GRAPH:
     #     # Plotando para conferir
-    #     nx.draw(G_inicial, with_labels=True)
-    #     plt.show()
+    # my_pos = nx.spring_layout(G_inicial, seed=3113794652)
+    # fig = plt.figure(figsize=(8, 8))
+    # nx.draw(
+    #     G_inicial,
+    #     pos=my_pos,
+    #     with_labels=True,
+    #     node_size=500,
+    # )
+    # # plt.show()
+    # labels = nx.get_edge_attributes(G_inicial, "weight")
+    # nx.draw_networkx_edge_labels(G_inicial, my_pos, edge_labels=labels, font_size=10)
+    # plt.waitforbuttonpress()
 
     # Estimativa das distâncias de todas as cidades com destino
     # para Bucharest, heurísticas h(n)
@@ -239,19 +307,41 @@ def main():
     origem = "Arad"
     destino = "Bucharest"
 
+    """
+    # ----------------------------------------
     # BFS
+    # ----------------------------------------
+    """
     G = BFS(G_inicial, origem)
-    caminho = caminho_minimo_BFS(G, origem, destino)
+    caminho = obtem_caminho(G, origem, destino)
 
     custo = calcula_custo_caminho(G, caminho)
 
-    print(f"Custo: {custo}\t->\tCaminho: {caminho}")
+    print(
+        f"BFS:\n" +
+        f"\tCusto: {custo}\n"+
+        f"\tCaminho: {caminho}"
+        f"\tCaminho: {caminho}"
+        
+        )
 
-    # Chame aqui apropriadamente os algoritmos para resolver o problema
-
+    """
+    # ----------------------------------------
     # UCS
+    # ----------------------------------------
+    """
+    G = UCS(G_inicial, origem, destino)
+    caminho = obtem_caminho(G, origem, destino)
 
+    custo = calcula_custo_caminho(G, caminho)
+
+    print(f"UCS:\n" f"\tCusto: {custo}\n" f"\tCaminho: {caminho}")
+
+    """
+    # ----------------------------------------
     # A-star
+    # ----------------------------------------
+    """
 
     if SHOW_GRAPH:
         print("OK! Pressione Enter pra finalizar...")
