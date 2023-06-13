@@ -284,25 +284,25 @@ Execução número: 9
 
 # Resultado Final - 10 repetições:
 - Método: BFS_media
-    - Tempo de execução: 37.0238 segundos
+    - Tempo de execução: 37.0238
     - Número de nós expandidos: 544890
     - Custo do caminho: 4748.9279
     - Tamanho do caminho: 3597
 
 - Método: DFS_media
-    - Tempo de execução: 1.7619 segundos
+    - Tempo de execução: 1.7619
     - Número de nós expandidos: 9458
     - Custo do caminho: 9316.6473
     - Tamanho do caminho: 7456
 
 - Método: UCS_media
-    - Tempo de execução: 656.3412 segundos
+    - Tempo de execução: 656.3412
     - Número de nós expandidos: 544933
     - Custo do caminho: 4620.012
     - Tamanho do caminho: 3623
 
 - Método: A-Star_media
-    - Tempo de execução: 291.3711 segundos
+    - Tempo de execução: 291.3711
     - Número de nós expandidos: 214222
     - Custo do caminho: 4633.8699
     - Tamanho do caminho: 3641
