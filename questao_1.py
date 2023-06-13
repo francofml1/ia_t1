@@ -422,6 +422,7 @@ def main():
     print(f"Tamanho do labirinto: {N_LINHAS}x{N_COLUNAS}")
 
     for i in range(REPETICOES):
+        print("-------")
         print(f"Execução número: {i}")
 
         labirinto = gera_labirinto(N_LINHAS, N_COLUNAS, INICIO, GOAL)
@@ -466,28 +467,28 @@ def main():
         # BFS Search
         # ----------------------------------------
         result_BFS.run()
-        # result_BFS.printResults()
+        result_BFS.printResults()
         res_BFS.append(result_BFS)
 
         # ----------------------------------------
         # DFS Search
         # ----------------------------------------
         result_DFS.run()
-        # result_DFS.printResults()
+        result_DFS.printResults()
         res_DFS.append(result_DFS)
 
         # ----------------------------------------
         # Uniform Cost Search
         # ----------------------------------------
         result_UCS.run()
-        # result_UCS.printResults()
+        result_UCS.printResults()
         res_UCS.append(result_UCS)
 
         # ----------------------------------------
         # A-Star Search
         # ----------------------------------------
         result_AStar.run()
-        # result_AStar.printResults()
+        result_AStar.printResults()
         res_AStar.append(result_AStar)
 
         # print("+++++++++++++++++++++++++")
@@ -505,13 +506,13 @@ def main():
 
     print(f"Resultado Final - {REPETICOES} repetições:")
 
-    print(f"\tGoal inalcançável em {REPETICOES - counter_BFS} execuções")
+    print(f"Goal inalcançável em {REPETICOES - counter_BFS} execuções")
     res_media_BFS.printResults()
-    print(f"\tGoal inalcançável em {REPETICOES - counter_DFS} execuções")
+    print(f"Goal inalcançável em {REPETICOES - counter_DFS} execuções")
     res_media_DFS.printResults()
-    print(f"\tGoal inalcançável em {REPETICOES - counter_UCS} execuções")
+    print(f"Goal inalcançável em {REPETICOES - counter_UCS} execuções")
     res_media_UCS.printResults()
-    print(f"\tGoal inalcançável em {REPETICOES - counter_AStar} execuções")
+    print(f"Goal inalcançável em {REPETICOES - counter_AStar} execuções")
     res_media_AStar.printResults()
 
     if SHOW_GRAPH:

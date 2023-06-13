@@ -55,14 +55,20 @@ class Results:
                 self.tamCaminho = len(self.caminho) - 1
                 self.numExpandidos = len(self.expandidos)
 
+        return self.alcancado
+
     def printResults(self):
-        if not self.alcancado:
-            print("Goal é inalcançavel neste labirinto.")
-        else:
+        print(f"Método: {self.name}")
+        if self.alcancado:
             print(
-                f"Método: {self.name}\n"
                 f"\tTempo de execução: {round( self.tempo,4)} segundos\n"
                 f"\tNúmero de nós expandidos: {self.numExpandidos}\n"
                 f"\tCusto do caminho: {round(self.custo_total, 4)}\n"
                 f"\tTamanho do caminho: {self.tamCaminho}\n"
             )
+        else:
+            print(
+                f"\tGOAL É INALCANÇAVEL NESTE LABIRINTO.\n"
+                f"\tTempo de execução: {round( self.tempo,4)} segundos\n"
+                f"\tNúmero de nós expandidos: {self.numExpandidos}\n"
+                )
