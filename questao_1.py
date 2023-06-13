@@ -279,7 +279,9 @@ def uniform_cost_search(labirinto: list, inicio: Celula, goal: Celula, viewer=No
             # calcula o custo
             v.f = custo_caminho(obtem_caminho(v))
 
-            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira.queue, v)):
+            if (not esta_contido(expandidos, v)) and (
+                not esta_contido(fronteira.queue, v)
+            ):
                 fronteira.put(v)
             elif esta_contido(fronteira.queue, v):
                 # encontra no na fronteira
@@ -339,7 +341,9 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
             # calcula função custo: f(n) = g(n) + h(n)
             v.f = custo_caminho(obtem_caminho(v)) + distancia(v, goal)
 
-            if (not esta_contido(expandidos, v)) and (not esta_contido(fronteira.queue, v)):
+            if (not esta_contido(expandidos, v)) and (
+                not esta_contido(fronteira.queue, v)
+            ):
                 fronteira.put(v)
             elif esta_contido(fronteira.queue, v):
                 # encontra no na fronteira
@@ -386,7 +390,7 @@ def cal_media(res_list):
     ret.custo_total = custo_total
     ret.tamCaminho = tamCaminho
 
-    return ret
+    return ret, counter
 
 
 # -------------------------------
@@ -394,20 +398,20 @@ def cal_media(res_list):
 
 def main():
     print("Starting")
-    REPETICOES = 1
+    REPETICOES = 10
     res_BFS = []
     res_DFS = []
     res_UCS = []
     res_AStar = []
 
-    SHOW_GRAPH = True
-    # SHOW_GRAPH = False
+    # SHOW_GRAPH = True
+    SHOW_GRAPH = False
     ZOOM = 30
 
     # SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
     # random.seed(SEED)
-    N_LINHAS = 20
-    N_COLUNAS = 20
+    N_LINHAS = 300
+    N_COLUNAS = 300
     INICIO = Celula(y=0, x=0, anterior=None)
     GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
 
@@ -417,8 +421,8 @@ def main():
     """
     print(f"Tamanho do labirinto: {N_LINHAS}x{N_COLUNAS}")
 
-    for _ in range(REPETICOES):
-        print("-------------------------")
+    for i in range(REPETICOES):
+        print(f"Execução número: {i}")
 
         labirinto = gera_labirinto(N_LINHAS, N_COLUNAS, INICIO, GOAL)
 
@@ -486,23 +490,28 @@ def main():
         # result_AStar.printResults()
         res_AStar.append(result_AStar)
 
-        print("+++++++++++++++++++++++++")
+        # print("+++++++++++++++++++++++++")
 
-    print("=========================")
+    # print("=========================")
 
-    res_media_BFS = cal_media(res_BFS)
+    res_media_BFS, counter_BFS = cal_media(res_BFS)
     res_media_BFS.alcancado = True
-    res_media_DFS = cal_media(res_DFS)
+    res_media_DFS, counter_DFS = cal_media(res_DFS)
     res_media_DFS.alcancado = True
-    res_media_UCS = cal_media(res_UCS)
+    res_media_UCS, counter_UCS = cal_media(res_UCS)
     res_media_UCS.alcancado = True
-    res_media_AStar = cal_media(res_AStar)
+    res_media_AStar, counter_AStar = cal_media(res_AStar)
     res_media_AStar.alcancado = True
 
-    print("Resultado Final:")
+    print(f"Resultado Final - {REPETICOES} repetições:")
+
+    print(f"\tGoal inalcançável em {REPETICOES - counter_BFS} execuções")
     res_media_BFS.printResults()
+    print(f"\tGoal inalcançável em {REPETICOES - counter_DFS} execuções")
     res_media_DFS.printResults()
+    print(f"\tGoal inalcançável em {REPETICOES - counter_UCS} execuções")
     res_media_UCS.printResults()
+    print(f"\tGoal inalcançável em {REPETICOES - counter_AStar} execuções")
     res_media_AStar.printResults()
 
     if SHOW_GRAPH:

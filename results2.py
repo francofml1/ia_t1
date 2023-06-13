@@ -61,4 +61,5 @@ class Results:
                 f"\tNúmero de nós expandidos: {self.numExpandidos}\n"
                 f"\tCusto do caminho: {round(self.custo_total, 4)}\n"
                 f"\tTamanho do caminho: {self.tamCaminho}\n"
+                f"\tCaminho: {self.caminho}\n"
             )
