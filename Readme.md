@@ -1,4 +1,4 @@
-# Inteligência Artificial - Trabalho 1
+# Inteligência Artificial - Trabalho 1: Solução de Problemas por Busca
 
 Respositório desenvolvido para execução do Trabalho 1 da disciplina de Inteligência Artificial.
 
