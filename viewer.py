@@ -28,13 +28,14 @@ class MazeViewer():
         maze_img = 255 - maze_img
         maze_img = cv2.cvtColor(maze_img, cv2.COLOR_GRAY2BGR)
 
-        self._draw_cells(maze_img, path, MazeViewer.PATH_COLOR)
-
-        maze_img[self._start.y, self._start.x] = MazeViewer.START_COLOR
-        maze_img[self._goal.y, self._goal.x] = MazeViewer.GOAL_COLOR
 
         self._draw_cells(maze_img, generated, MazeViewer.GENERATED_COLOR)
         self._draw_cells(maze_img, expanded, MazeViewer.EXPANDED_COLOR)
+
+        self._draw_cells(maze_img, path, MazeViewer.PATH_COLOR)
+       
+        maze_img[self._start.y, self._start.x] = MazeViewer.START_COLOR
+        maze_img[self._goal.y, self._goal.x] = MazeViewer.GOAL_COLOR
 
         maze_img = self._increase_image_size(maze_img, zoom=self._zoom)
         self._draw_grid(maze_img, self._zoom)

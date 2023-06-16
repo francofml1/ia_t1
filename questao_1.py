@@ -187,7 +187,8 @@ def breadth_first_search(labirinto, inicio, goal, viewer=None):
     custo = custo_caminho(caminho)
 
     if viewer is not None:
-        viewer.update(path=caminho)
+        viewer.update(generated=fronteira, expanded=expandidos, path=caminho)
+        viewer.pause()
 
     return caminho, custo, expandidos
 
@@ -238,8 +239,9 @@ def depth_first_search(labirinto, inicio, goal, viewer=None):
     custo = custo_caminho(caminho)
 
     if viewer is not None:
-        viewer.update(path=caminho)
-
+        viewer.update(generated=fronteira, expanded=expandidos, path=caminho)
+        # viewer.update(path=caminho)
+        viewer.pause()
     return caminho, custo, expandidos
 
 
@@ -300,7 +302,9 @@ def uniform_cost_search(labirinto: list, inicio: Celula, goal: Celula, viewer=No
     custo = custo_caminho(caminho)
 
     if viewer is not None:
-        viewer.update(path=caminho)
+        viewer.update(generated=fronteira.queue, expanded=expandidos, path=caminho)
+        # viewer.update(path=caminho)
+        viewer.pause()
 
     return caminho, custo, expandidos
 
@@ -362,7 +366,9 @@ def a_star_search(labirinto, inicio, goal, viewer=None):
     custo = custo_caminho(caminho)
 
     if viewer is not None:
-        viewer.update(path=caminho)
+        viewer.update(generated=fronteira.queue, expanded=expandidos, path=caminho)
+        # viewer.update(path=caminho)
+        viewer.pause()
 
     return caminho, custo, expandidos
 
